@@ -22,9 +22,9 @@ GameBoyAdvanceBGMatrixRenderer.prototype.initialize = function () {
     else {
         this.bgAffineRenderer = this.gfx.bgAffineRenderer1;
     }
-    this.screenSizePreprocess();
-    this.screenBaseBlockPreprocess();
-    this.characterBaseBlockPreprocess();
+    this.screenSizePreprocess(0);
+    this.screenBaseBlockPreprocess(0);
+    this.characterBaseBlockPreprocess(0);
     this.displayOverflowProcess(0);
 }
 GameBoyAdvanceBGMatrixRenderer.prototype.renderScanLine = function (line) {
@@ -80,14 +80,17 @@ GameBoyAdvanceBGMatrixRenderer.prototype.fetchPixelNoOverflow = function (x, y) 
     var address = this.computeScreenAddress(x | 0, y | 0) | 0;
     return this.palette[this.VRAM[address & 0xFFFF] & 0xFF] | 0;
 }
-GameBoyAdvanceBGMatrixRenderer.prototype.screenBaseBlockPreprocess = function () {
-    this.BGScreenBaseBlock = this.gfx.BGScreenBaseBlock[this.BGLayer & 3] << 11;
+GameBoyAdvanceBGMatrixRenderer.prototype.screenBaseBlockPreprocess = function (BGScreenBaseBlock) {
+    BGScreenBaseBlock = BGScreenBaseBlock | 0;
+    this.BGScreenBaseBlock = BGScreenBaseBlock << 11;
 }
-GameBoyAdvanceBGMatrixRenderer.prototype.characterBaseBlockPreprocess = function () {
-    this.BGCharacterBaseBlock = this.gfx.BGCharacterBaseBlock[this.BGLayer & 3] << 14;
+GameBoyAdvanceBGMatrixRenderer.prototype.characterBaseBlockPreprocess = function (BGCharacterBaseBlock) {
+    BGCharacterBaseBlock = BGCharacterBaseBlock | 0;
+    this.BGCharacterBaseBlock = BGCharacterBaseBlock << 14;
 }
-GameBoyAdvanceBGMatrixRenderer.prototype.screenSizePreprocess = function () {
-    this.mapSize = 0x10 << (this.gfx.BGScreenSize[this.BGLayer & 3] | 0);
+GameBoyAdvanceBGMatrixRenderer.prototype.screenSizePreprocess = function (BGScreenSize) {
+    BGScreenSize = BGScreenSize | 0;
+    this.mapSize = 0x10 << (BGScreenSize | 0);
     this.mapSizeComparer = ((this.mapSize << 3) - 1) | 0;
 }
 GameBoyAdvanceBGMatrixRenderer.prototype.displayOverflowPreprocess = function (doOverflow) {

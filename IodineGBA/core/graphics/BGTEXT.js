@@ -26,10 +26,10 @@ if (__VIEWS_SUPPORTED__) {
         this.BGXCoord = 0;
         this.BGYCoord = 0;
         this.do256 = 0;
-        this.screenSizePreprocess();
+        this.screenSizePreprocess(0);
         this.priorityPreprocess();
-        this.screenBaseBlockPreprocess();
-        this.characterBaseBlockPreprocess();
+        this.screenBaseBlockPreprocess(0);
+        this.characterBaseBlockPreprocess(0);
     }
     GameBoyAdvanceBGTEXTRenderer.prototype.renderWholeTiles8BIT = function (xTileStart, yTileStart, yTileOffset) {
         xTileStart = xTileStart | 0;
@@ -112,10 +112,10 @@ else {
         this.BGXCoord = 0;
         this.BGYCoord = 0;
         this.do256 = 0;
-        this.screenSizePreprocess();
+        this.screenSizePreprocess(0);
         this.priorityPreprocess();
-        this.screenBaseBlockPreprocess();
-        this.characterBaseBlockPreprocess();
+        this.screenBaseBlockPreprocess(0);
+        this.characterBaseBlockPreprocess(0);
     }
     GameBoyAdvanceBGTEXTRenderer.prototype.renderWholeTiles8BIT = function (xTileStart, yTileStart, yTileOffset) {
         //Process full 8 pixels at a time:
@@ -503,17 +503,20 @@ GameBoyAdvanceBGTEXTRenderer.prototype.paletteModeSelect = function (do256) {
     do256 = do256 | 0;
     this.do256 = do256 | 0;
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.screenSizePreprocess = function () {
-    this.tileMode = this.gfx.BGScreenSize[this.BGLayer & 0x3] | 0;
+GameBoyAdvanceBGTEXTRenderer.prototype.screenSizePreprocess = function (BGScreenSize) {
+    BGScreenSize = BGScreenSize | 0;
+    this.tileMode = BGScreenSize | 0;
 }
 GameBoyAdvanceBGTEXTRenderer.prototype.priorityPreprocess = function () {
     this.priorityFlag = (this.gfx.BGPriority[this.BGLayer & 3] << 23) | (1 << (this.BGLayer | 0x10));
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.screenBaseBlockPreprocess = function () {
-    this.BGScreenBaseBlock = this.gfx.BGScreenBaseBlock[this.BGLayer & 3] << 10;
+GameBoyAdvanceBGTEXTRenderer.prototype.screenBaseBlockPreprocess = function (BGScreenBaseBlock) {
+    BGScreenBaseBlock = BGScreenBaseBlock | 0;
+    this.BGScreenBaseBlock = BGScreenBaseBlock << 10;
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.characterBaseBlockPreprocess = function () {
-    this.BGCharacterBaseBlock = this.gfx.BGCharacterBaseBlock[this.BGLayer & 3] << 12;
+GameBoyAdvanceBGTEXTRenderer.prototype.characterBaseBlockPreprocess = function (BGCharacterBaseBlock) {
+    BGCharacterBaseBlock = BGCharacterBaseBlock | 0;
+    this.BGCharacterBaseBlock = BGCharacterBaseBlock << 12;
 }
 GameBoyAdvanceBGTEXTRenderer.prototype.writeBGHOFS8_0 = function (data) {
     data = data | 0;
