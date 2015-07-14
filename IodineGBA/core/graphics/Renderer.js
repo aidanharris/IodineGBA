@@ -518,6 +518,8 @@ GameBoyAdvanceGraphicsRenderer.prototype.writeBG1CNT16 = function (data) {
     this.bg1Renderer.screenBaseBlockPreprocess((data >> 8) & 0x1F);
 }
 GameBoyAdvanceGraphicsRenderer.prototype.writeBG0BG1CNT32 = function (data) {
+    data = data | 0;
+    this.graphicsJIT();
     //Bits 5-6 always 0.
     this.BGMosaic[0] = data & 0x40;
     this.bg0Renderer.paletteModeSelect(data & 0x80);
