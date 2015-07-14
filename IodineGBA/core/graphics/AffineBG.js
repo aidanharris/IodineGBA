@@ -25,7 +25,7 @@ if (__VIEWS_SUPPORTED__) {
         this.BGReferenceY = 0;
         this.pb = 0;
         this.pd = 0;
-        this.priorityPreprocess();
+        this.priorityPreprocess(0);
         this.offsetReferenceCounters();
     }
     if (typeof Math.imul == "function") {
@@ -94,7 +94,7 @@ else {
         this.BGReferenceY = 0;
         this.pb = 0;
         this.pd = 0;
-        this.priorityPreprocess();
+        this.priorityPreprocess(0);
         this.offsetReferenceCounters();
     }
     GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine = function (line, BGObject) {
@@ -129,8 +129,9 @@ GameBoyAdvanceAffineBGRenderer.prototype.resetReferenceCounters = function () {
     this.pb = this.BGReferenceX | 0;
     this.pd = this.BGReferenceY | 0;
 }
-GameBoyAdvanceAffineBGRenderer.prototype.priorityPreprocess = function () {
-    this.priorityFlag = (this.gfx.BGPriority[this.BGLayer | 0] << 23) | (1 << (this.BGLayer | 0x10));
+GameBoyAdvanceAffineBGRenderer.prototype.priorityPreprocess = function (BGPriority) {
+    BGPriority = BGPriority | 0;
+    this.priorityFlag = (BGPriority << 23) | (1 << (this.BGLayer | 0x10));
 }
 GameBoyAdvanceAffineBGRenderer.prototype.writeBGPA8_0 = function (data) {
     data = data | 0;

@@ -27,7 +27,7 @@ if (__VIEWS_SUPPORTED__) {
         this.BGYCoord = 0;
         this.do256 = 0;
         this.screenSizePreprocess(0);
-        this.priorityPreprocess();
+        this.priorityPreprocess(0);
         this.screenBaseBlockPreprocess(0);
         this.characterBaseBlockPreprocess(0);
     }
@@ -113,7 +113,7 @@ else {
         this.BGYCoord = 0;
         this.do256 = 0;
         this.screenSizePreprocess(0);
-        this.priorityPreprocess();
+        this.priorityPreprocess(0);
         this.screenBaseBlockPreprocess(0);
         this.characterBaseBlockPreprocess(0);
     }
@@ -507,8 +507,9 @@ GameBoyAdvanceBGTEXTRenderer.prototype.screenSizePreprocess = function (BGScreen
     BGScreenSize = BGScreenSize | 0;
     this.tileMode = BGScreenSize | 0;
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.priorityPreprocess = function () {
-    this.priorityFlag = (this.gfx.BGPriority[this.BGLayer & 3] << 23) | (1 << (this.BGLayer | 0x10));
+GameBoyAdvanceBGTEXTRenderer.prototype.priorityPreprocess = function (BGPriority) {
+    BGPriority = BGPriority | 0;
+    this.priorityFlag = (BGPriority << 23) | (1 << (this.BGLayer | 0x10));
 }
 GameBoyAdvanceBGTEXTRenderer.prototype.screenBaseBlockPreprocess = function (BGScreenBaseBlock) {
     BGScreenBaseBlock = BGScreenBaseBlock | 0;

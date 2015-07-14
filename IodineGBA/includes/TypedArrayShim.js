@@ -66,6 +66,7 @@ function getInt32View(typed_array) {
 }
 function getInt32ViewCustom(typed_array, start, end) {
     try {
+        typed_array = getInt32View(typed_array);
         return typed_array.subarray(start, end);
     }
     catch (error) {
