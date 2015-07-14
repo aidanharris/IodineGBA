@@ -24,6 +24,14 @@ function getUint8Array(size_t) {
         return getArray(size_t);
     }
 }
+function getUint8View(typed_array) {
+    try {
+        return new Uint8Array(typed_array.buffer);
+    }
+    catch (error) {
+        return null;
+    }
+}
 function getInt16Array(size_t) {
     try {
         return new Int16Array(size_t);
@@ -67,6 +75,21 @@ function getInt32View(typed_array) {
 function getInt32ViewCustom(typed_array, start, end) {
     try {
         typed_array = getInt32View(typed_array);
+        return typed_array.subarray(start, end);
+    }
+    catch (error) {
+        try {
+            //Nightly Firefox 4 used to have the subarray function named as slice:
+            return typed_array.slice(start, end);
+        }
+        catch (error) {
+            return null;
+        }
+    }
+}
+function getUint8ViewCustom(typed_array, start, end) {
+    try {
+        typed_array = getUint8View(typed_array);
         return typed_array.subarray(start, end);
     }
     catch (error) {
