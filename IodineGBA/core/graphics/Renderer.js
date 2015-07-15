@@ -28,7 +28,7 @@ if (__VIEWS_SUPPORTED__) {
         this.VRAM32 = getInt32View(this.VRAM);
         this.paletteRAM16 = getUint16View(this.paletteRAM);
         this.paletteRAM32 = getInt32View(this.paletteRAM);
-        this.buffer = getInt32Array(0x600);
+        this.buffer = getInt32Array(0x680);
         this.lineBuffer = getInt32ViewCustom(this.buffer, 0, 240);
         this.BGMosaic = getUint8ViewCustom(this.buffer, 960, 964);
         this.frameBuffer = this.coreExposed.frameBuffer;
@@ -55,7 +55,7 @@ else {
         this.VRAM32 = getInt32View(this.VRAM);
         this.paletteRAM16 = getUint16View(this.paletteRAM);
         this.paletteRAM32 = getInt32View(this.paletteRAM);
-        this.buffer = getInt32Array(0x600);
+        this.buffer = getInt32Array(0x680);
         this.BGMosaic = getUint8Array(0x4);
         this.frameBuffer = this.coreExposed.frameBuffer;
         this.totalLinesPassed = 0;

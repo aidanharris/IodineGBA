@@ -38,10 +38,9 @@ if (__VIEWS_SUPPORTED__) {
             this.OAMRAM = getUint8Array(0x400);
             this.OAMRAM16 = getUint16View(this.OAMRAM);
             this.OAMRAM32 = getInt32View(this.OAMRAM);
-            this.offset = 0x500;
-            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, this.offset | 0, ((this.offset | 0) + 240) | 0);
+            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, 0x500, 0x5F0);
             this.scratchWindowBuffer = getInt32Array(240);
-            this.scratchOBJBuffer = getInt32Array(128);
+            this.scratchOBJBuffer = getInt32ViewCustom(this.gfx.buffer, 0x600, 0x680);
             this.OBJMatrixParameters = getInt32Array(0x80);
             this.initializeOAMTable();
         }
@@ -60,10 +59,9 @@ if (__VIEWS_SUPPORTED__) {
             this.OAMRAM = getUint8Array(0x400);
             this.OAMRAM16 = getUint16View(this.OAMRAM);
             this.OAMRAM32 = getInt32View(this.OAMRAM);
-            this.offset = 0x500;
-            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, this.offset | 0, ((this.offset | 0) + 240) | 0);
+            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, 0x500, 0x5F0);
             this.scratchWindowBuffer = getInt32Array(240);
-            this.scratchOBJBuffer = getInt32Array(128);
+            this.scratchOBJBuffer = getInt32ViewCustom(this.gfx.buffer, 0x600, 0x680);
             this.clearingBuffer = getInt32Array(240);
             this.initializeClearingBuffer();
             this.OBJMatrixParameters = getInt32Array(0x80);
@@ -116,6 +114,7 @@ else {
         this.scratchBuffer = this.gfx.buffer;
         this.scratchWindowBuffer = getInt32Array(240);
         this.scratchOBJBuffer = getInt32Array(128);
+        this.gfx.mosaicRenderer.attachOBJBuffer(scratchOBJBuffer);
         this.OBJMatrixParameters = getInt32Array(0x80);
         this.initializeOAMTable();
     }
@@ -744,7 +743,7 @@ GameBoyAdvanceOBJRenderer.prototype.outputSpriteToScratch = function (sprite, xS
     }
     //Perform the mosaic transform:
     if ((sprite.mosaic | 0) != 0) {
-        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(this.scratchOBJBuffer, xcoord | 0, xSize | 0);
+        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(xcoord | 0, xSize | 0);
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
@@ -768,7 +767,7 @@ GameBoyAdvanceOBJRenderer.prototype.outputSemiTransparentSpriteToScratch = funct
     }
     //Perform the mosaic transform:
     if ((sprite.mosaic | 0) != 0) {
-        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(this.scratchOBJBuffer, xcoord | 0, xSize | 0);
+        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(xcoord | 0, xSize | 0);
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
@@ -792,7 +791,7 @@ GameBoyAdvanceOBJRenderer.prototype.outputSpriteToOBJWINScratch = function (spri
     }
     //Perform the mosaic transform:
     if ((sprite.mosaic | 0) != 0) {
-        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(this.scratchOBJBuffer, xcoord | 0, xSize | 0);
+        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(xcoord | 0, xSize | 0);
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
