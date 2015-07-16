@@ -16,7 +16,6 @@ GameBoyAdvanceBG2FrameBufferRenderer.prototype.initialize = function () {
     this.VRAM = this.gfx.VRAM;
     this.VRAM16 = this.gfx.VRAM16;
     this.fetchPixel = this.fetchMode3Pixel;
-    this.bgAffineRenderer = this.gfx.bgAffineRenderer0;
     this.frameSelect = 0;
 }
 GameBoyAdvanceBG2FrameBufferRenderer.prototype.selectMode = function (mode) {
