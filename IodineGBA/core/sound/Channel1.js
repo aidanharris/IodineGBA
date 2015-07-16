@@ -22,7 +22,7 @@ function GameBoyAdvanceChannel1Synth(sound) {
     this.frequencySweepDivider = 0;
     this.decreaseSweep = false;
     this.nr11 = 0;
-    this.CachedDuty = this.dutyLookup[0];
+    this.CachedDuty = this.dutyLookup[0] | 0;
     this.totalLength = 0x40;
     this.nr12 = 0;
     this.envelopeVolume = 0;
@@ -40,10 +40,10 @@ function GameBoyAdvanceChannel1Synth(sound) {
     this.Swept = false;
 }
 GameBoyAdvanceChannel1Synth.prototype.dutyLookup = [
-    [false, false, false, false, false, false, false, true],
-    [true, false, false, false, false, false, false, true],
-    [true, false, false, false, false, true, true, true],
-    [false, true, true, true, true, true, true, false]
+    0xF0000000,
+    0xF000000F,
+    0xFFF0000F,
+    0x0FFFFFF0
 ];
 GameBoyAdvanceChannel1Synth.prototype.disabled = function () {
     //Clear NR10:
@@ -55,7 +55,7 @@ GameBoyAdvanceChannel1Synth.prototype.disabled = function () {
     this.decreaseSweep = false;
     //Clear NR11:
     this.nr11 = 0;
-    this.CachedDuty = this.dutyLookup[0];
+    this.CachedDuty = this.dutyLookup[0] | 0;
     this.totalLength = 0x40;
     //Clear NR12:
     this.nr12 = 0;
@@ -73,6 +73,8 @@ GameBoyAdvanceChannel1Synth.prototype.disabled = function () {
     this.envelopeSweepsLast = -1;
     this.FrequencyCounter = 0;
     this.DutyTracker = 0;
+    this.leftEnable = 0;
+    this.rightEnable = 0;
 }
 GameBoyAdvanceChannel1Synth.prototype.clockAudioLength = function () {
     if ((this.totalLength | 0) > 1) {
@@ -92,9 +94,15 @@ GameBoyAdvanceChannel1Synth.prototype.volumeEnableCheck = function () {
     this.enableCheck();
 }
 GameBoyAdvanceChannel1Synth.prototype.outputLevelCache = function () {
-    this.currentSampleLeft = (this.sound.leftChannel1) ? (this.envelopeVolume | 0) : 0;
-    this.currentSampleRight = (this.sound.rightChannel1) ? (this.envelopeVolume | 0) : 0;
+    this.currentSampleLeft = this.leftEnable & this.envelopeVolume;
+    this.currentSampleRight = this.rightEnable & this.envelopeVolume;
     this.outputLevelSecondaryCache();
+}
+GameBoyAdvanceChannel1Synth.prototype.setChannelOutputEnable = function (data) {
+    data = data | 0;
+    //Set by NR51 handler:
+    this.rightEnable = (data << 31) >> 31;
+    this.leftEnable = (data << 27) >> 27;
 }
 GameBoyAdvanceChannel1Synth.prototype.outputLevelSecondaryCache = function () {
     if (this.Enabled) {
@@ -108,14 +116,9 @@ GameBoyAdvanceChannel1Synth.prototype.outputLevelSecondaryCache = function () {
     this.outputLevelTrimaryCache();
 }
 GameBoyAdvanceChannel1Synth.prototype.outputLevelTrimaryCache = function () {
-    if (this.CachedDuty[this.DutyTracker | 0]) {
-        this.currentSampleLeftTrimary = this.currentSampleLeftSecondary | 0;
-        this.currentSampleRightTrimary = this.currentSampleRightSecondary | 0;
-    }
-    else {
-        this.currentSampleLeftTrimary = 0;
-        this.currentSampleRightTrimary = 0;
-    }
+    var duty = this.CachedDuty >> (this.DutyTracker | 0);
+    this.currentSampleLeftTrimary = this.currentSampleLeftSecondary & duty;
+    this.currentSampleRightTrimary = this.currentSampleRightSecondary & duty;
 }
 GameBoyAdvanceChannel1Synth.prototype.clockAudioSweep = function () {
     //Channel 1:
@@ -213,7 +216,7 @@ GameBoyAdvanceChannel1Synth.prototype.clockAudioEnvelope = function () {
 GameBoyAdvanceChannel1Synth.prototype.computeAudioChannel = function () {
     if ((this.FrequencyCounter | 0) == 0) {
         this.FrequencyCounter = this.FrequencyTracker | 0;
-        this.DutyTracker = ((this.DutyTracker | 0) + 1) & 0x7;
+        this.DutyTracker = ((this.DutyTracker | 0) + 4) & 0x1C;
     }
 }
 GameBoyAdvanceChannel1Synth.prototype.readSOUND1CNT8_0 = function () {
@@ -241,7 +244,7 @@ GameBoyAdvanceChannel1Synth.prototype.readSOUND1CNT8_2 = function () {
 GameBoyAdvanceChannel1Synth.prototype.writeSOUND1CNT8_2 = function (data) {
     data = data | 0;
     //NR11:
-    this.CachedDuty = this.dutyLookup[(data >> 6) & 0x3];
+    this.CachedDuty = this.dutyLookup[(data >> 6) & 0x3] | 0;
     this.totalLength = (0x40 - (data & 0x3F)) | 0;
     this.nr11 = data & 0xFF;
     this.enableCheck();

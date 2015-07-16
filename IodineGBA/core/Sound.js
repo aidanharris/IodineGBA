@@ -76,11 +76,9 @@ GameBoyAdvanceSound.prototype.audioDisabled = function () {
     this.VinRightChannelMasterVolume = 1;
     //Clear NR51:
     this.nr51 = 0;
-    this.rightChannel1 = false;
     this.rightChannel2 = false;
     this.rightChannel3 = false;
     this.rightChannel4 = false;
-    this.leftChannel1 = false;
     this.leftChannel2 = false;
     this.leftChannel3 = false;
     this.leftChannel4 = false;
@@ -755,14 +753,13 @@ GameBoyAdvanceSound.prototype.writeSOUNDCNT_L1 = function (data) {
     if (this.soundMasterEnabled && (this.nr51 | 0) != (data | 0)) {
         this.audioJIT();
         this.nr51 = data | 0;
-        this.rightChannel1 = ((data & 0x01) == 0x01);
         this.rightChannel2 = ((data & 0x02) == 0x02);
         this.rightChannel3 = ((data & 0x04) == 0x04);
         this.rightChannel4 = ((data & 0x08) == 0x08);
-        this.leftChannel1 = ((data & 0x10) == 0x10);
         this.leftChannel2 = ((data & 0x20) == 0x20);
         this.leftChannel3 = ((data & 0x40) == 0x40);
         this.leftChannel4 = (data > 0x7F);
+        this.channel1.setChannelOutputEnable(data | 0);
     }
 }
 GameBoyAdvanceSound.prototype.readSOUNDCNT_L1 = function () {
