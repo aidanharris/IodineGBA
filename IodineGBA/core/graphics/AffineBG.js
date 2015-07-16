@@ -28,6 +28,7 @@ if (__VIEWS_SUPPORTED__) {
         this.BGReferenceY = 0;
         this.pb = 0;
         this.pd = 0;
+        this.doMosaic = 0;
         this.priorityPreprocess(0);
         this.offsetReferenceCounters();
     }
@@ -37,7 +38,7 @@ if (__VIEWS_SUPPORTED__) {
             line = line | 0;
             var x = this.pb | 0;
             var y = this.pd | 0;
-            if ((this.gfx.BGMosaic[2] | 0) != 0) {
+            if ((this.doMosaic | 0) != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0;
                 x = ((x | 0) - Math.imul(this.BGdmx | 0, mosaicY | 0)) | 0;
@@ -47,7 +48,7 @@ if (__VIEWS_SUPPORTED__) {
                 //Fetch pixel:
                 this.scratchBuffer[position | 0] = this.priorityFlag | this.bg2MatrixRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if ((this.gfx.BGMosaic[2] | 0) != 0) {
+            if ((this.doMosaic | 0) != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
             }
@@ -56,7 +57,7 @@ if (__VIEWS_SUPPORTED__) {
             line = line | 0;
             var x = this.pb | 0;
             var y = this.pd | 0;
-            if ((this.gfx.BGMosaic[3] | 0) != 0) {
+            if ((this.doMosaic | 0) != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0;
                 x = ((x | 0) - Math.imul(this.BGdmx | 0, mosaicY | 0)) | 0;
@@ -66,7 +67,7 @@ if (__VIEWS_SUPPORTED__) {
                 //Fetch pixel:
                 this.scratchBuffer[position | 0] = this.priorityFlag | this.bg3MatrixRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if ((this.gfx.BGMosaic[3] | 0) != 0) {
+            if ((this.doMosaic | 0) != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
             }
@@ -75,7 +76,7 @@ if (__VIEWS_SUPPORTED__) {
             line = line | 0;
             var x = this.pb | 0;
             var y = this.pd | 0;
-            if ((this.gfx.BGMosaic[2] | 0) != 0) {
+            if ((this.doMosaic | 0) != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0;
                 x = ((x | 0) - Math.imul(this.BGdmx | 0, mosaicY | 0)) | 0;
@@ -85,7 +86,7 @@ if (__VIEWS_SUPPORTED__) {
                 //Fetch pixel:
                 this.scratchBuffer[position | 0] = this.priorityFlag | this.bg2FrameBufferRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if ((this.gfx.BGMosaic[2] | 0) != 0) {
+            if ((this.doMosaic | 0) != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
             }
@@ -101,7 +102,7 @@ if (__VIEWS_SUPPORTED__) {
         GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2M = function (line) {
             var x = this.pb;
             var y = this.pd;
-            if (this.gfx.BGMosaic[2] != 0) {
+            if (this.doMosaic != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
                 x -= this.BGdmx * mosaicY;
@@ -111,7 +112,7 @@ if (__VIEWS_SUPPORTED__) {
                 //Fetch pixel:
                 this.scratchBuffer[position] = this.priorityFlag | this.bg2MatrixRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if (this.gfx.BGMosaic[2] != 0) {
+            if (this.doMosaic != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
             }
@@ -119,7 +120,7 @@ if (__VIEWS_SUPPORTED__) {
         GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine3M = function (line) {
             var x = this.pb;
             var y = this.pd;
-            if (this.gfx.BGMosaic[3] != 0) {
+            if (this.doMosaic != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
                 x -= this.BGdmx * mosaicY;
@@ -129,7 +130,7 @@ if (__VIEWS_SUPPORTED__) {
                 //Fetch pixel:
                 this.scratchBuffer[position] = this.priorityFlag | this.bg3MatrixRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if (this.gfx.BGMosaic[3] != 0) {
+            if (this.doMosaic != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
             }
@@ -137,7 +138,7 @@ if (__VIEWS_SUPPORTED__) {
         GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2F = function (line) {
             var x = this.pb;
             var y = this.pd;
-            if (this.gfx.BGMosaic[2] != 0) {
+            if (this.doMosaic != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
                 x -= this.BGdmx * mosaicY;
@@ -147,7 +148,7 @@ if (__VIEWS_SUPPORTED__) {
                 //Fetch pixel:
                 this.scratchBuffer[position] = this.priorityFlag | this.bg2FrameBufferRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if (this.gfx.BGMosaic[2] != 0) {
+            if (this.doMosaic != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
             }
@@ -173,13 +174,14 @@ else {
         this.BGReferenceY = 0;
         this.pb = 0;
         this.pd = 0;
+        this.doMosaic = 0;
         this.priorityPreprocess(0);
         this.offsetReferenceCounters();
     }
     GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2M = function (line) {
         var x = this.pb;
         var y = this.pd;
-        if (this.gfx.BGMosaic[2] != 0) {
+        if (this.doMosaic != 0) {
             //Correct line number for mosaic:
             var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
             x -= this.BGdmx * mosaicY;
@@ -189,7 +191,7 @@ else {
             //Fetch pixel:
             this.scratchBuffer[this.offset + position] = this.priorityFlag | this.bg2MatrixRenderer.fetchPixel(x >> 8, y >> 8);
         }
-        if (this.gfx.BGMosaic[2] != 0) {
+        if (this.doMosaic != 0) {
             //Pixelize the line horizontally:
             this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
         }
@@ -197,7 +199,7 @@ else {
     GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine3M = function (line) {
         var x = this.pb;
         var y = this.pd;
-        if (this.gfx.BGMosaic[3] != 0) {
+        if (this.doMosaic != 0) {
             //Correct line number for mosaic:
             var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
             x -= this.BGdmx * mosaicY;
@@ -207,7 +209,7 @@ else {
             //Fetch pixel:
             this.scratchBuffer[this.offset + position] = this.priorityFlag | this.bg3MatrixRenderer.fetchPixel(x >> 8, y >> 8);
         }
-        if (this.gfx.BGMosaic[3] != 0) {
+        if (this.doMosaic != 0) {
             //Pixelize the line horizontally:
             this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
         }
@@ -215,7 +217,7 @@ else {
     GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2F = function (line) {
         var x = this.pb;
         var y = this.pd;
-        if (this.gfx.BGMosaic[2] != 0) {
+        if (this.doMosaic != 0) {
             //Correct line number for mosaic:
             var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
             x -= this.BGdmx * mosaicY;
@@ -225,7 +227,7 @@ else {
             //Fetch pixel:
             this.scratchBuffer[this.offset + position] = this.priorityFlag | this.bg2FrameBufferRenderer.fetchPixel(x >> 8, y >> 8);
         }
-        if (this.gfx.BGMosaic[2] != 0) {
+        if (this.doMosaic != 0) {
             //Pixelize the line horizontally:
             this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
         }
@@ -243,6 +245,10 @@ GameBoyAdvanceAffineBGRenderer.prototype.incrementReferenceCounters = function (
 GameBoyAdvanceAffineBGRenderer.prototype.resetReferenceCounters = function () {
     this.pb = this.BGReferenceX | 0;
     this.pd = this.BGReferenceY | 0;
+}
+GameBoyAdvanceAffineBGRenderer.prototype.setMosaicEnable = function (doMosaic) {
+    doMosaic = doMosaic | 0;
+    this.doMosaic = doMosaic | 0;
 }
 GameBoyAdvanceAffineBGRenderer.prototype.priorityPreprocess = function (BGPriority) {
     BGPriority = BGPriority | 0;
