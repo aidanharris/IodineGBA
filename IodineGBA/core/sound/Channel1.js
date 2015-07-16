@@ -38,6 +38,8 @@ function GameBoyAdvanceChannel1Synth(sound) {
     this.FrequencyCounter = 0;
     this.DutyTracker = 0;
     this.Swept = false;
+    this.leftEnable = 0;
+    this.rightEnable = 0;
 }
 GameBoyAdvanceChannel1Synth.prototype.dutyLookup = [
     0xF0000000,
@@ -102,7 +104,7 @@ GameBoyAdvanceChannel1Synth.prototype.setChannelOutputEnable = function (data) {
     data = data | 0;
     //Set by NR51 handler:
     this.rightEnable = (data << 31) >> 31;
-    this.leftEnable = (data << 27) >> 27;
+    this.leftEnable = (data << 27) >> 31;
 }
 GameBoyAdvanceChannel1Synth.prototype.outputLevelSecondaryCache = function () {
     if (this.Enabled) {
