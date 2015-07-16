@@ -114,7 +114,7 @@ else {
         this.scratchBuffer = this.gfx.buffer;
         this.scratchWindowBuffer = getInt32Array(240);
         this.scratchOBJBuffer = getInt32Array(128);
-        this.gfx.mosaicRenderer.attachOBJBuffer(scratchOBJBuffer);
+        this.gfx.mosaicRenderer.attachOBJBuffer(this.scratchOBJBuffer);
         this.OBJMatrixParameters = getInt32Array(0x80);
         this.initializeOAMTable();
     }
