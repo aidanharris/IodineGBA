@@ -12,10 +12,13 @@ function GameBoyAdvanceAffineBGRenderer(gfx, BGLayer) {
     BGLayer = BGLayer | 0;
     this.gfx = gfx;
     this.BGLayer = BGLayer | 0;
+    this.offset = ((this.BGLayer << 8) + 0x100) | 0;
 }
 if (__VIEWS_SUPPORTED__) {
     GameBoyAdvanceAffineBGRenderer.prototype.initialize = function () {
-        this.offset = ((this.BGLayer << 8) + 0x100) | 0;
+        this.bg2MatrixRenderer = this.gfx.bg2MatrixRenderer;
+        this.bg3MatrixRenderer = this.gfx.bg3MatrixRenderer;
+        this.bg2FrameBufferRenderer = this.gfx.bg2FrameBufferRenderer;
         this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, this.offset | 0, ((this.offset | 0) + 240) | 0);
         this.BGdx = 0x100;
         this.BGdmx = 0;
@@ -30,11 +33,11 @@ if (__VIEWS_SUPPORTED__) {
     }
     if (typeof Math.imul == "function") {
         //Math.imul found, insert the optimized path in:
-        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine = function (line, BGObject) {
+        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2M = function (line) {
             line = line | 0;
             var x = this.pb | 0;
             var y = this.pd | 0;
-            if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+            if ((this.gfx.BGMosaic[2] | 0) != 0) {
                 //Correct line number for mosaic:
                 var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0;
                 x = ((x | 0) - Math.imul(this.BGdmx | 0, mosaicY | 0)) | 0;
@@ -42,9 +45,47 @@ if (__VIEWS_SUPPORTED__) {
             }
             for (var position = 0; (position | 0) < 240; position = ((position | 0) + 1) | 0, x = ((x | 0) + (this.BGdx | 0)) | 0, y = ((y | 0) + (this.BGdy | 0)) | 0) {
                 //Fetch pixel:
-                this.scratchBuffer[position | 0] = this.priorityFlag | BGObject.fetchPixel(x >> 8, y >> 8);
+                this.scratchBuffer[position | 0] = this.priorityFlag | this.bg2MatrixRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+            if ((this.gfx.BGMosaic[2] | 0) != 0) {
+                //Pixelize the line horizontally:
+                this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
+            }
+        }
+        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine3M = function (line) {
+            line = line | 0;
+            var x = this.pb | 0;
+            var y = this.pd | 0;
+            if ((this.gfx.BGMosaic[3] | 0) != 0) {
+                //Correct line number for mosaic:
+                var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0;
+                x = ((x | 0) - Math.imul(this.BGdmx | 0, mosaicY | 0)) | 0;
+                y = ((y | 0) - Math.imul(this.BGdmy | 0, mosaicY | 0)) | 0;
+            }
+            for (var position = 0; (position | 0) < 240; position = ((position | 0) + 1) | 0, x = ((x | 0) + (this.BGdx | 0)) | 0, y = ((y | 0) + (this.BGdy | 0)) | 0) {
+                //Fetch pixel:
+                this.scratchBuffer[position | 0] = this.priorityFlag | this.bg3MatrixRenderer.fetchPixel(x >> 8, y >> 8);
+            }
+            if ((this.gfx.BGMosaic[3] | 0) != 0) {
+                //Pixelize the line horizontally:
+                this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
+            }
+        }
+        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2F = function (line) {
+            line = line | 0;
+            var x = this.pb | 0;
+            var y = this.pd | 0;
+            if ((this.gfx.BGMosaic[2] | 0) != 0) {
+                //Correct line number for mosaic:
+                var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0;
+                x = ((x | 0) - Math.imul(this.BGdmx | 0, mosaicY | 0)) | 0;
+                y = ((y | 0) - Math.imul(this.BGdmy | 0, mosaicY | 0)) | 0;
+            }
+            for (var position = 0; (position | 0) < 240; position = ((position | 0) + 1) | 0, x = ((x | 0) + (this.BGdx | 0)) | 0, y = ((y | 0) + (this.BGdy | 0)) | 0) {
+                //Fetch pixel:
+                this.scratchBuffer[position | 0] = this.priorityFlag | this.bg2FrameBufferRenderer.fetchPixel(x >> 8, y >> 8);
+            }
+            if ((this.gfx.BGMosaic[2] | 0) != 0) {
                 //Pixelize the line horizontally:
                 this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
             }
@@ -57,22 +98,58 @@ if (__VIEWS_SUPPORTED__) {
     }
     else {
         //Math.imul not found, use the compatibility method:
-        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine = function (line, BGObject) {
+        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2M = function (line) {
             var x = this.pb;
             var y = this.pd;
-            if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+            if (this.gfx.BGMosaic[2] != 0) {
                 //Correct line number for mosaic:
-                var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0);
+                var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
                 x -= this.BGdmx * mosaicY;
                 y -= this.BGdmy * mosaicY;
             }
             for (var position = 0; position < 240; ++position, x += this.BGdx, y += this.BGdy) {
                 //Fetch pixel:
-                this.scratchBuffer[position] = this.priorityFlag | BGObject.fetchPixel(x >> 8, y >> 8);
+                this.scratchBuffer[position] = this.priorityFlag | this.bg2MatrixRenderer.fetchPixel(x >> 8, y >> 8);
             }
-            if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+            if (this.gfx.BGMosaic[2] != 0) {
                 //Pixelize the line horizontally:
-                this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
+                this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
+            }
+        }
+        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine3M = function (line) {
+            var x = this.pb;
+            var y = this.pd;
+            if (this.gfx.BGMosaic[3] != 0) {
+                //Correct line number for mosaic:
+                var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
+                x -= this.BGdmx * mosaicY;
+                y -= this.BGdmy * mosaicY;
+            }
+            for (var position = 0; position < 240; ++position, x += this.BGdx, y += this.BGdy) {
+                //Fetch pixel:
+                this.scratchBuffer[position] = this.priorityFlag | this.bg3MatrixRenderer.fetchPixel(x >> 8, y >> 8);
+            }
+            if (this.gfx.BGMosaic[3] != 0) {
+                //Pixelize the line horizontally:
+                this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
+            }
+        }
+        GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2F = function (line) {
+            var x = this.pb;
+            var y = this.pd;
+            if (this.gfx.BGMosaic[2] != 0) {
+                //Correct line number for mosaic:
+                var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
+                x -= this.BGdmx * mosaicY;
+                y -= this.BGdmy * mosaicY;
+            }
+            for (var position = 0; position < 240; ++position, x += this.BGdx, y += this.BGdy) {
+                //Fetch pixel:
+                this.scratchBuffer[position] = this.priorityFlag | this.bg2FrameBufferRenderer.fetchPixel(x >> 8, y >> 8);
+            }
+            if (this.gfx.BGMosaic[2] != 0) {
+                //Pixelize the line horizontally:
+                this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
             }
         }
         GameBoyAdvanceAffineBGRenderer.prototype.offsetReferenceCounters = function () {
@@ -84,7 +161,9 @@ if (__VIEWS_SUPPORTED__) {
 }
 else {
     GameBoyAdvanceAffineBGRenderer.prototype.initialize = function () {
-        this.offset = (this.BGLayer << 8) + 0x100;
+        this.bg2MatrixRenderer = this.gfx.bg2MatrixRenderer;
+        this.bg3MatrixRenderer = this.gfx.bg3MatrixRenderer;
+        this.bg2FrameBufferRenderer = this.gfx.bg2FrameBufferRenderer;
         this.scratchBuffer = this.gfx.buffer;
         this.BGdx = 0x100;
         this.BGdmx = 0;
@@ -97,20 +176,56 @@ else {
         this.priorityPreprocess(0);
         this.offsetReferenceCounters();
     }
-    GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine = function (line, BGObject) {
+    GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2M = function (line) {
         var x = this.pb;
         var y = this.pd;
-        if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+        if (this.gfx.BGMosaic[2] != 0) {
             //Correct line number for mosaic:
-            var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line | 0);
+            var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
             x -= this.BGdmx * mosaicY;
             y -= this.BGdmy * mosaicY;
         }
         for (var position = 0; position < 240; ++position, x += this.BGdx, y += this.BGdy) {
             //Fetch pixel:
-            this.scratchBuffer[this.offset + position] = this.priorityFlag | BGObject.fetchPixel(x >> 8, y >> 8);
+            this.scratchBuffer[this.offset + position] = this.priorityFlag | this.bg2MatrixRenderer.fetchPixel(x >> 8, y >> 8);
         }
-        if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+        if (this.gfx.BGMosaic[2] != 0) {
+            //Pixelize the line horizontally:
+            this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
+        }
+    }
+    GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine3M = function (line) {
+        var x = this.pb;
+        var y = this.pd;
+        if (this.gfx.BGMosaic[3] != 0) {
+            //Correct line number for mosaic:
+            var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
+            x -= this.BGdmx * mosaicY;
+            y -= this.BGdmy * mosaicY;
+        }
+        for (var position = 0; position < 240; ++position, x += this.BGdx, y += this.BGdy) {
+            //Fetch pixel:
+            this.scratchBuffer[this.offset + position] = this.priorityFlag | this.bg3MatrixRenderer.fetchPixel(x >> 8, y >> 8);
+        }
+        if (this.gfx.BGMosaic[3] != 0) {
+            //Pixelize the line horizontally:
+            this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
+        }
+    }
+    GameBoyAdvanceAffineBGRenderer.prototype.renderScanLine2F = function (line) {
+        var x = this.pb;
+        var y = this.pd;
+        if (this.gfx.BGMosaic[2] != 0) {
+            //Correct line number for mosaic:
+            var mosaicY = this.gfx.mosaicRenderer.getMosaicYOffset(line);
+            x -= this.BGdmx * mosaicY;
+            y -= this.BGdmy * mosaicY;
+        }
+        for (var position = 0; position < 240; ++position, x += this.BGdx, y += this.BGdy) {
+            //Fetch pixel:
+            this.scratchBuffer[this.offset + position] = this.priorityFlag | this.bg2FrameBufferRenderer.fetchPixel(x >> 8, y >> 8);
+        }
+        if (this.gfx.BGMosaic[2] != 0) {
             //Pixelize the line horizontally:
             this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset);
         }

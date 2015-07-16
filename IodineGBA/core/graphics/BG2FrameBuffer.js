@@ -32,10 +32,6 @@ GameBoyAdvanceBG2FrameBufferRenderer.prototype.selectMode = function (mode) {
             this.fetchPixel = this.fetchMode5Pixel;
     }
 }
-GameBoyAdvanceBG2FrameBufferRenderer.prototype.renderScanLine = function (line) {
-    line = line | 0;
-    this.bgAffineRenderer.renderScanLine(line | 0, this);
-}
 if (__LITTLE_ENDIAN__) {
     if (typeof Math.imul == "function") {
         //Math.imul found, insert the optimized path in:

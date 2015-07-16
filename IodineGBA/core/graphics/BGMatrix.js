@@ -8,28 +8,16 @@
  
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-function GameBoyAdvanceBGMatrixRenderer(gfx, BGLayer) {
-    BGLayer = BGLayer | 0;
+function GameBoyAdvanceBGMatrixRenderer(gfx) {
     this.gfx = gfx;
-    this.BGLayer = BGLayer | 0;
 }
 GameBoyAdvanceBGMatrixRenderer.prototype.initialize = function () {
     this.VRAM = this.gfx.VRAM;
     this.palette = this.gfx.palette256;
-    if ((this.BGLayer & 0x1) == 0) {
-        this.bgAffineRenderer = this.gfx.bgAffineRenderer0;
-    }
-    else {
-        this.bgAffineRenderer = this.gfx.bgAffineRenderer1;
-    }
     this.screenSizePreprocess(0);
     this.screenBaseBlockPreprocess(0);
     this.characterBaseBlockPreprocess(0);
     this.displayOverflowProcess(0);
-}
-GameBoyAdvanceBGMatrixRenderer.prototype.renderScanLine = function (line) {
-    line = line | 0;
-    this.bgAffineRenderer.renderScanLine(line | 0, this);
 }
 if (typeof Math.imul == "function") {
     //Math.imul found, insert the optimized path in:

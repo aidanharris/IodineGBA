@@ -76,8 +76,8 @@ GameBoyAdvanceGraphicsRenderer.prototype.generateRenderers = function () {
     this.bg3TextRenderer = new GameBoyAdvanceBGTEXTRenderer(this, 3);
     this.bgAffineRenderer0 = new GameBoyAdvanceAffineBGRenderer(this, 2);
     this.bgAffineRenderer1 = new GameBoyAdvanceAffineBGRenderer(this, 3);
-    this.bg2MatrixRenderer = new GameBoyAdvanceBGMatrixRenderer(this, 2);
-    this.bg3MatrixRenderer = new GameBoyAdvanceBGMatrixRenderer(this, 3);
+    this.bg2MatrixRenderer = new GameBoyAdvanceBGMatrixRenderer(this);
+    this.bg3MatrixRenderer = new GameBoyAdvanceBGMatrixRenderer(this);
     this.bg2FrameBufferRenderer = new GameBoyAdvanceBG2FrameBufferRenderer(this);
     this.objRenderer = new GameBoyAdvanceOBJRenderer(this);
     this.window0Renderer = new GameBoyAdvanceWindowRenderer(new GameBoyAdvanceWindowCompositor(this));
@@ -234,7 +234,7 @@ GameBoyAdvanceGraphicsRenderer.prototype.renderMode1 = function (line) {
     }
     if ((toRender & 0x4) != 0) {
         //Render the BG2 layer:
-        this.bg2MatrixRenderer.renderScanLine(line | 0);
+        this.bgAffineRenderer0.renderScanLine2M(line | 0);
     }
     if ((toRender & 0x10) != 0) {
         //Render the sprite layer:
@@ -251,11 +251,11 @@ GameBoyAdvanceGraphicsRenderer.prototype.renderMode2 = function (line) {
     var toRender = this.display & 0x1C;
     if ((toRender & 0x4) != 0) {
         //Render the BG2 layer:
-        this.bg2MatrixRenderer.renderScanLine(line | 0);
+        this.bgAffineRenderer0.renderScanLine2M(line | 0);
     }
     if ((toRender & 0x8) != 0) {
         //Render the BG3 layer:
-        this.bg3MatrixRenderer.renderScanLine(line | 0);
+        this.bgAffineRenderer1.renderScanLine3M(line | 0);
     }
     if ((toRender & 0x10) != 0) {
         //Render the sprite layer:
@@ -271,7 +271,7 @@ GameBoyAdvanceGraphicsRenderer.prototype.renderModeFrameBuffer = function (line)
     //Mode 3/4/5 Rendering Selected:
     var toRender = this.display & 0x14;
     if ((toRender & 0x4) != 0) {
-        this.bg2FrameBufferRenderer.renderScanLine(line | 0);
+        this.bgAffineRenderer0.renderScanLine2F(line | 0);
     }
     if ((toRender & 0x10) != 0) {
         //Render the sprite layer:
