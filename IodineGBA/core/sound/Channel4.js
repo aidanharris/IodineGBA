@@ -11,9 +11,7 @@
 function GameBoyAdvanceChannel4Synth(sound) {
     this.sound = sound;
     this.currentSampleLeft = 0;
-    this.currentSampleLeftSecondary = 0;
     this.currentSampleRight = 0;
-    this.currentSampleRightSecondary = 0;
     this.totalLength = 0x40;
     this.envelopeVolume = 0;
     this.FrequencyPeriod = 32;
@@ -25,8 +23,10 @@ function GameBoyAdvanceChannel4Synth(sound) {
     this.envelopeSweeps = 0;
     this.envelopeSweepsLast = -1;
     this.canPlay = false;
-    this.Enabled = false;
+    this.Enabled = 0;
     this.counter = 0;
+    this.leftEnable = 0;
+    this.rightEnable = 0;
     this.nr42 = 0;
     this.nr43 = 0;
     this.nr44 = 0;
@@ -111,7 +111,7 @@ GameBoyAdvanceChannel4Synth.prototype.disabled = function () {
     this.envelopeSweeps = 0;
     this.envelopeSweepsLast = -1;
     this.canPlay = false;
-    this.Enabled = false;
+    this.Enabled = 0;
     this.counter = 0;
 }
 GameBoyAdvanceChannel4Synth.prototype.clockAudioLength = function () {
@@ -158,26 +158,27 @@ GameBoyAdvanceChannel4Synth.prototype.computeAudioChannel = function () {
     }
 }
 GameBoyAdvanceChannel4Synth.prototype.enableCheck = function () {
-    this.Enabled = ((this.consecutive || (this.totalLength | 0) > 0) && this.canPlay);
+    if ((this.consecutive || (this.totalLength | 0) > 0) && this.canPlay) {
+        this.Enabled = 0xF;
+    }
+    else {
+        this.Enabled = 0;
+    }
 }
 GameBoyAdvanceChannel4Synth.prototype.volumeEnableCheck = function () {
     this.canPlay = ((this.nr42 | 0) > 7);
     this.enableCheck();
 }
 GameBoyAdvanceChannel4Synth.prototype.outputLevelCache = function () {
-    this.currentSampleLeft = (this.sound.leftChannel4) ? (this.cachedSample | 0) : 0;
-    this.currentSampleRight = (this.sound.rightChannel4) ? (this.cachedSample | 0) : 0;
-    this.outputLevelSecondaryCache();
+    var cachedSample = this.cachedSample & this.Enabled;
+    this.currentSampleLeft = this.leftEnable & cachedSample;
+    this.currentSampleRight = this.rightEnable & cachedSample;
 }
-GameBoyAdvanceChannel4Synth.prototype.outputLevelSecondaryCache = function () {
-    if (this.Enabled) {
-        this.currentSampleLeftSecondary = this.currentSampleLeft | 0;
-        this.currentSampleRightSecondary = this.currentSampleRight | 0;
-    }
-    else {
-        this.currentSampleLeftSecondary = 0;
-        this.currentSampleRightSecondary = 0;
-    }
+GameBoyAdvanceChannel4Synth.prototype.setChannelOutputEnable = function (data) {
+    data = data | 0;
+    //Set by NR51 handler:
+    this.rightEnable = (data << 28) >> 31;
+    this.leftEnable = (data << 24) >> 31;
 }
 GameBoyAdvanceChannel4Synth.prototype.updateCache = function () {
     this.cachedSample = this.noiseSampleTable[this.currentVolume | this.lastSampleLookup] | 0;

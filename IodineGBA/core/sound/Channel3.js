@@ -11,9 +11,7 @@
 function GameBoyAdvanceChannel3Synth(sound) {
     this.sound = sound;
     this.currentSampleLeft = 0;
-    this.currentSampleLeftSecondary = 0;
     this.currentSampleRight = 0;
-    this.currentSampleRightSecondary = 0;
     this.lastSampleLookup = 0;
     this.canPlay = false;
     this.WAVERAMBankSpecified = 0;
@@ -24,7 +22,9 @@ function GameBoyAdvanceChannel3Synth(sound) {
     this.frequency = 0;
     this.FrequencyPeriod = 0x4000;
     this.consecutive = true;
-    this.Enabled = false;
+    this.Enabled = 0;
+    this.leftEnable = 0;
+    this.rightEnable = 0;
     this.nr30 = 0;
     this.nr31 = 0;
     this.nr32 = 0;
@@ -58,7 +58,7 @@ GameBoyAdvanceChannel3Synth.prototype.disabled = function () {
     //Clear NR34:
     this.nr34 = 0;
     this.consecutive = true;
-    this.Enabled = false;
+    this.Enabled = 0;
     this.counter = 0;
 }
 if (typeof Math.imul == "function") {
@@ -86,19 +86,15 @@ else {
     }
 }
 GameBoyAdvanceChannel3Synth.prototype.outputLevelCache = function () {
-    this.currentSampleLeft = (this.sound.leftChannel3) ? (this.cachedSample | 0) : 0;
-    this.currentSampleRight = (this.sound.rightChannel3) ? (this.cachedSample | 0) : 0;
-    this.outputLevelSecondaryCache();
+    var cachedSample = this.cachedSample & this.Enabled;
+    this.currentSampleLeft = this.leftEnable & cachedSample;
+    this.currentSampleRight = this.rightEnable & cachedSample;
 }
-GameBoyAdvanceChannel3Synth.prototype.outputLevelSecondaryCache = function () {
-    if (this.Enabled) {
-        this.currentSampleLeftSecondary = this.currentSampleLeft | 0;
-        this.currentSampleRightSecondary = this.currentSampleRight | 0;
-    }
-    else {
-        this.currentSampleLeftSecondary = 0;
-        this.currentSampleRightSecondary = 0;
-    }
+GameBoyAdvanceChannel3Synth.prototype.setChannelOutputEnable = function (data) {
+    data = data | 0;
+    //Set by NR51 handler:
+    this.rightEnable = (data << 29) >> 31;
+    this.leftEnable = (data << 25) >> 31;
 }
 GameBoyAdvanceChannel3Synth.prototype.readWAVE8 = function (address) {
     address = ((address | 0) + (this.WAVERAMBankAccessed >> 1)) | 0;
@@ -216,7 +212,12 @@ else {
     }
 }
 GameBoyAdvanceChannel3Synth.prototype.enableCheck = function () {
-    this.Enabled = (/*this.canPlay && */(this.consecutive || (this.totalLength | 0) > 0));
+    if (/*this.canPlay && */(this.consecutive || (this.totalLength | 0) > 0)) {
+        this.Enabled = 0xF;
+    }
+    else {
+        this.Enabled = 0;
+    }
 }
 GameBoyAdvanceChannel3Synth.prototype.clockAudioLength = function () {
     if ((this.totalLength | 0) > 1) {
