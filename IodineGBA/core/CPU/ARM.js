@@ -195,6 +195,18 @@ ARMInstructionSet.prototype.guard16OffsetRegisterWrite = function (data) {
     data = data | 0;
     this.guardRegisterWrite((this.execute >> 0x10) & 0xF, data | 0);
 }
+ARMInstructionSet.prototype.guard16OffsetUserRegisterWrite = function (data) {
+    data = data | 0;
+    var address = (this.execute >> 0x10) & 0xF;
+    if ((address | 0) < 0xF) {
+        //Non-PC Write:
+        this.guardUserRegisterWrite(address | 0, data | 0);
+    }
+    else {
+        //We performed a branch:
+        this.CPUCore.branch(data & -4);
+    }
+}
 ARMInstructionSet.prototype.guardProgramCounterRegisterWriteCPSR = function (data) {
     data = data | 0;
     //Restore SPSR to CPSR:
@@ -280,18 +292,6 @@ ARMInstructionSet.prototype.guardUserRegisterWriteLDM = function (address, data)
         this.guardProgramCounterRegisterWriteCPSR(data | 0);
     }
 }
-ARMInstructionSet.prototype.baseRegisterWrite = function (data, userMode) {
-    //Update writeback for offset+base modes:
-    data = data | 0;
-    userMode = userMode | 0;
-    var address = (this.execute >> 16) & 0xF;
-    if ((address | userMode) == 0xF) {
-        this.guardRegisterWrite(address | 0, data | 0);
-    }
-    else {
-        this.guardUserRegisterWrite(address | 0, data | 0);
-    }
-}
 ARMInstructionSet.prototype.readPC = function () {
     //PC register read:
     return this.registers[0xF] | 0;
@@ -304,7 +304,15 @@ ARMInstructionSet.prototype.readRegister = function (address) {
 ARMInstructionSet.prototype.readUserRegister = function (address) {
     //Unguarded user mode register read:
     address = address | 0;
-    return this.registersUSR[address & 0x7] | 0;
+    var data = 0;
+    if ((address | 0) < 0xF) {
+        data = this.registersUSR[address & 0x7] | 0;
+    }
+    else {
+        //Get Special Case PC Read:
+        data = this.readPC() | 0;
+    }
+    return data | 0;
 }
 ARMInstructionSet.prototype.read0OffsetRegister = function () {
     //Unguarded register read at position 0:
@@ -322,6 +330,10 @@ ARMInstructionSet.prototype.read16OffsetRegister = function () {
     //Unguarded register read at position 0x10:
     return this.readRegister(this.execute >> 0x10) | 0;
 }
+ARMInstructionSet.prototype.read16OffsetUserRegister = function () {
+    //Guarded register read at position 0x10:
+    return this.guardUserRegisterRead(this.execute >> 0x10) | 0;
+}
 ARMInstructionSet.prototype.guard12OffsetRegisterRead = function () {
     this.incrementProgramCounter();
     return this.readRegister((this.execute >> 12) & 0xF) | 0;
@@ -329,50 +341,31 @@ ARMInstructionSet.prototype.guard12OffsetRegisterRead = function () {
 ARMInstructionSet.prototype.guardUserRegisterRead = function (address) {
     //Guard only on user access, not PC!:
     address = address | 0;
-    switch (this.CPUCore.modeFlags & 0x1f) {
+    var data = 0;
+    switch (this.CPUCore.modeFlags & 0x1F) {
         case 0x10:
         case 0x1F:
-            return this.readRegister(address | 0) | 0;
+            data = this.readRegister(address | 0) | 0;
+            break;
         case 0x11:
             if ((address | 0) < 8) {
-                return this.readRegister(address | 0) | 0;
+                data = this.readRegister(address | 0) | 0;
             }
             else {
                 //User-Mode Register Read Inside Non-User-Mode:
-                return this.readUserRegister(address | 0) | 0;
+                data = this.readUserRegister(address | 0) | 0;
             }
             break;
         default:
             if ((address | 0) < 13) {
-                return this.readRegister(address | 0) | 0;
+                data = this.readRegister(address | 0) | 0;
             }
             else {
                 //User-Mode Register Read Inside Non-User-Mode:
-                return this.readUserRegister(address | 0) | 0;
+                data = this.readUserRegister(address | 0) | 0;
             }
     }
-}
-ARMInstructionSet.prototype.guardUserRegisterReadSTM = function (address) {
-    //Proxy guarded user mode read (used by STM*):
-    address = address | 0;
-    if ((address | 0) < 0xF) {
-        return this.guardUserRegisterRead(address | 0) | 0;
-    }
-    else {
-        //Get Special Case PC Read:
-        return this.readPC() | 0;
-    }
-}
-ARMInstructionSet.prototype.baseRegisterRead = function (userMode) {
-    //Read specially for offset+base modes:
-    userMode = userMode | 0;
-    var address = (this.execute >> 16) & 0xF;
-    if ((address | userMode) == 0xF) {
-        return this.readRegister(address | 0) | 0;
-    }
-    else {
-        return this.guardUserRegisterRead(address | 0) | 0;
-    }
+    return data | 0;
 }
 ARMInstructionSet.prototype.BX = function () {
     //Branch & eXchange:
@@ -893,7 +886,7 @@ ARMInstructionSet.prototype.MSR = function () {
 ARMInstructionSet.prototype.MSR1 = function () {
     var newcpsr = this.read0OffsetRegister() | 0;
     this.branchFlags.setNZCV(newcpsr | 0);
-    if ((this.execute & 0x10000) == 0x10000 && (this.CPUCore.modeFlags & 0x1f) != 0x10) {
+    if ((this.execute & 0x10000) != 0 && (this.CPUCore.modeFlags & 0x1F) != 0x10) {
         this.CPUCore.switchRegisterBank(newcpsr & 0x1F);
         this.CPUCore.modeFlags = newcpsr & 0xdf;
         this.CPUCore.assertIRQ();
@@ -921,7 +914,7 @@ ARMInstructionSet.prototype.MSR2 = function () {
             return;
     }
     var spsr = (operand >> 20) & 0xF00;
-    if ((this.execute & 0x10000) == 0x10000) {
+    if ((this.execute & 0x10000) != 0) {
         spsr = spsr | (operand & 0xFF);
     }
     else {
@@ -1119,13 +1112,13 @@ ARMInstructionSet.prototype.LDRSB2 = function () {
 }
 ARMInstructionSet.prototype.STR = function () {
     //Perform word store calculations:
-    var address = this.operand2OP_LoadStore3(0) | 0;
+    var address = this.operand2OP_LoadStore3Normal() | 0;
     //Write to memory location:
     this.CPUCore.write32(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDR = function () {
     //Perform word load calculations:
-    var address = this.operand2OP_LoadStore3(0) | 0;
+    var address = this.operand2OP_LoadStore3Normal() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read32(address | 0) | 0);
     //Internal Cycle:
@@ -1133,13 +1126,13 @@ ARMInstructionSet.prototype.LDR = function () {
 }
 ARMInstructionSet.prototype.STRB = function () {
     //Perform byte store calculations:
-    var address = this.operand2OP_LoadStore3(0) | 0;
+    var address = this.operand2OP_LoadStore3Normal() | 0;
     //Write to memory location:
     this.CPUCore.write8(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDRB = function () {
     //Perform byte store calculations:
-    var address = this.operand2OP_LoadStore3(0) | 0;
+    var address = this.operand2OP_LoadStore3Normal() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read8(address | 0) | 0);
     //Internal Cycle:
@@ -1175,13 +1168,13 @@ ARMInstructionSet.prototype.LDRB4 = function () {
 }
 ARMInstructionSet.prototype.STRT = function () {
     //Perform word store calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore3(0xF) | 0;
+    var address = this.operand2OP_LoadStore3User() | 0;
     //Write to memory location:
     this.CPUCore.write32(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDRT = function () {
     //Perform word load calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore3(0xF) | 0;
+    var address = this.operand2OP_LoadStore3User() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read32(address | 0) | 0);
     //Internal Cycle:
@@ -1189,13 +1182,13 @@ ARMInstructionSet.prototype.LDRT = function () {
 }
 ARMInstructionSet.prototype.STRBT = function () {
     //Perform byte store calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore3(0xF) | 0;
+    var address = this.operand2OP_LoadStore3User() | 0;
     //Write to memory location:
     this.CPUCore.write8(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDRBT = function () {
     //Perform byte load calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore3(0xF) | 0;
+    var address = this.operand2OP_LoadStore3User() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read8(address | 0) | 0);
     //Internal Cycle:
@@ -1203,13 +1196,13 @@ ARMInstructionSet.prototype.LDRBT = function () {
 }
 ARMInstructionSet.prototype.STR2 = function () {
     //Perform word store calculations:
-    var address = this.operand2OP_LoadStore5(0) | 0;
+    var address = this.operand2OP_LoadStore5Normal() | 0;
     //Write to memory location:
     this.CPUCore.write32(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDR2 = function () {
     //Perform word load calculations:
-    var address = this.operand2OP_LoadStore5(0) | 0;
+    var address = this.operand2OP_LoadStore5Normal() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read32(address | 0) | 0);
     //Internal Cycle:
@@ -1217,13 +1210,13 @@ ARMInstructionSet.prototype.LDR2 = function () {
 }
 ARMInstructionSet.prototype.STRB2 = function () {
     //Perform byte store calculations:
-    var address = this.operand2OP_LoadStore5(0) | 0;
+    var address = this.operand2OP_LoadStore5Normal() | 0;
     //Write to memory location:
     this.CPUCore.write8(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDRB2 = function () {
     //Perform byte store calculations:
-    var address = this.operand2OP_LoadStore5(0) | 0;
+    var address = this.operand2OP_LoadStore5Normal() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read8(address | 0) | 0);
     //Internal Cycle:
@@ -1231,13 +1224,13 @@ ARMInstructionSet.prototype.LDRB2 = function () {
 }
 ARMInstructionSet.prototype.STRT2 = function () {
     //Perform word store calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore5(0xF) | 0;
+    var address = this.operand2OP_LoadStore5User() | 0;
     //Write to memory location:
     this.CPUCore.write32(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDRT2 = function () {
     //Perform word load calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore5(0xF) | 0;
+    var address = this.operand2OP_LoadStore5User() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read32(address | 0) | 0);
     //Internal Cycle:
@@ -1245,13 +1238,13 @@ ARMInstructionSet.prototype.LDRT2 = function () {
 }
 ARMInstructionSet.prototype.STRBT2 = function () {
     //Perform byte store calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore5(0xF) | 0;
+    var address = this.operand2OP_LoadStore5User() | 0;
     //Write to memory location:
     this.CPUCore.write8(address | 0, this.guard12OffsetRegisterRead() | 0);
 }
 ARMInstructionSet.prototype.LDRBT2 = function () {
     //Perform byte load calculations (forced user-mode):
-    var address = this.operand2OP_LoadStore5(0xF) | 0;
+    var address = this.operand2OP_LoadStore5User() | 0;
     //Read from memory location:
     this.guard12OffsetRegisterWrite(this.CPUCore.read8(address | 0) | 0);
     //Internal Cycle:
@@ -1488,7 +1481,7 @@ ARMInstructionSet.prototype.STMIAG = function () {
         for (var rListPosition = 0; rListPosition < 0x10; rListPosition = ((rListPosition | 0) + 1) | 0) {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
                 currentAddress = ((currentAddress | 0) + 4) | 0;
             }
         }
@@ -1509,7 +1502,7 @@ ARMInstructionSet.prototype.STMIAWG = function () {
         for (var rListPosition = 0; rListPosition < 0x10; rListPosition = ((rListPosition | 0) + 1) | 0) {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
                 currentAddress = ((currentAddress | 0) + 4) | 0;
                 //Compute writeback immediately after the first register load:
                 if ((count | 0) == 0) {
@@ -1537,7 +1530,7 @@ ARMInstructionSet.prototype.STMDAG = function () {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
                 currentAddress = ((currentAddress | 0) + 4) | 0;
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
             }
         }
         //Updating the address bus back to PC fetch:
@@ -1560,7 +1553,7 @@ ARMInstructionSet.prototype.STMDAWG = function () {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
                 currentAddress = ((currentAddress | 0) + 4) | 0;
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
                 //Compute writeback immediately after the first register load:
                 if ((count | 0) == 0) {
                     count = 1;
@@ -1585,7 +1578,7 @@ ARMInstructionSet.prototype.STMIBG = function () {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
                 currentAddress = ((currentAddress | 0) + 4) | 0;
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
             }
         }
         //Updating the address bus back to PC fetch:
@@ -1606,7 +1599,7 @@ ARMInstructionSet.prototype.STMIBWG = function () {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
                 currentAddress = ((currentAddress | 0) + 4) | 0;
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
                 //Compute writeback immediately after the first register load:
                 if ((count | 0) == 0) {
                     count = 1;
@@ -1632,7 +1625,7 @@ ARMInstructionSet.prototype.STMDBG = function () {
         for (var rListPosition = 0; (rListPosition | 0) < 0x10; rListPosition = ((rListPosition | 0) + 1) | 0) {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
                 currentAddress = ((currentAddress | 0) + 4) | 0;
             }
         }
@@ -1655,7 +1648,7 @@ ARMInstructionSet.prototype.STMDBWG = function () {
         for (var rListPosition = 0; (rListPosition | 0) < 0x10; rListPosition = ((rListPosition | 0) + 1) | 0) {
             if ((this.execute & (1 << rListPosition)) != 0) {
                 //Push a register into memory:
-                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterReadSTM(rListPosition | 0) | 0);
+                this.memory.memoryWrite32(currentAddress | 0, this.guardUserRegisterRead(rListPosition | 0) | 0);
                 currentAddress = ((currentAddress | 0) + 4) | 0;
                 //Compute writeback immediately after the first register load:
                 if ((count | 0) == 0) {
@@ -2336,17 +2329,28 @@ ARMInstructionSet.prototype.operand2OP_LoadStoreOperandDetermine = function () {
     }
     return offset | 0;
 }
-ARMInstructionSet.prototype.operand2OP_LoadStorePostT = function (offset, userMode) {
+ARMInstructionSet.prototype.operand2OP_LoadStorePostTUser = function (offset) {
     offset = offset | 0;
-    userMode = userMode | 0;
-    var base = this.baseRegisterRead(userMode | 0) | 0;
+    var base = this.read16OffsetUserRegister() | 0;
     if ((this.execute & 0x800000) == 0) {
         offset = ((base | 0) - (offset | 0)) | 0;
     }
     else {
         offset = ((base | 0) + (offset | 0)) | 0;
     }
-    this.baseRegisterWrite(offset | 0, userMode | 0);
+    this.guard16OffsetUserRegisterWrite(offset | 0);
+    return base | 0;
+}
+ARMInstructionSet.prototype.operand2OP_LoadStorePostTNormal = function (offset) {
+    offset = offset | 0;
+    var base = this.read16OffsetRegister() | 0;
+    if ((this.execute & 0x800000) == 0) {
+        offset = ((base | 0) - (offset | 0)) | 0;
+    }
+    else {
+        offset = ((base | 0) + (offset | 0)) | 0;
+    }
+    this.guard16OffsetRegisterWrite(offset | 0);
     return base | 0;
 }
 ARMInstructionSet.prototype.operand2OP_LoadStoreNotT = function (offset) {
@@ -2358,27 +2362,31 @@ ARMInstructionSet.prototype.operand2OP_LoadStoreNotT = function (offset) {
     else {
         offset = ((base | 0) + (offset | 0)) | 0;
     }
-    if ((this.execute & 0x200000) == 0x200000) {
+    if ((this.execute & 0x200000) != 0) {
         this.guard16OffsetRegisterWrite(offset | 0);
     }
     return offset | 0;
 }
 ARMInstructionSet.prototype.operand2OP_LoadStore1 = function () {
-    return this.operand2OP_LoadStorePostT(this.operand2OP_LoadStoreOperandDetermine() | 0, 0) | 0;
+    return this.operand2OP_LoadStorePostTNormal(this.operand2OP_LoadStoreOperandDetermine() | 0) | 0;
 }
 ARMInstructionSet.prototype.operand2OP_LoadStore2 = function () {
     return this.operand2OP_LoadStoreNotT(this.operand2OP_LoadStoreOperandDetermine() | 0) | 0;
 }
-ARMInstructionSet.prototype.operand2OP_LoadStore3 = function (userMode) {
-    userMode = userMode | 0;
-    return this.operand2OP_LoadStorePostT(this.execute & 0xFFF, userMode | 0) | 0;
+ARMInstructionSet.prototype.operand2OP_LoadStore3Normal = function () {
+    return this.operand2OP_LoadStorePostTNormal(this.execute & 0xFFF) | 0;
+}
+ARMInstructionSet.prototype.operand2OP_LoadStore3User = function () {
+    return this.operand2OP_LoadStorePostTUser(this.execute & 0xFFF) | 0;
 }
 ARMInstructionSet.prototype.operand2OP_LoadStore4 = function () {
     return this.operand2OP_LoadStoreNotT(this.execute & 0xFFF) | 0;
 }
-ARMInstructionSet.prototype.operand2OP_LoadStore5 = function (userMode) {
-    userMode = userMode | 0;
-    return this.operand2OP_LoadStorePostT(this.operand2OP_LoadStoreOffsetGen() | 0, userMode | 0) | 0;
+ARMInstructionSet.prototype.operand2OP_LoadStore5Normal = function () {
+    return this.operand2OP_LoadStorePostTNormal(this.operand2OP_LoadStoreOffsetGen() | 0) | 0;
+}
+ARMInstructionSet.prototype.operand2OP_LoadStore5User = function () {
+    return this.operand2OP_LoadStorePostTUser(this.operand2OP_LoadStoreOffsetGen() | 0) | 0;
 }
 ARMInstructionSet.prototype.operand2OP_LoadStore6 = function () {
     return this.operand2OP_LoadStoreNotT(this.operand2OP_LoadStoreOffsetGen() | 0) | 0;
