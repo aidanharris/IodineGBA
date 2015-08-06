@@ -99,7 +99,7 @@ function registerGUIEvents() {
                 Blitter.setSmoothScaling(this.checked);
              }
     });
-    document.getElementById("toggleDynamicSpeed").checked = true;
+    document.getElementById("toggleDynamicSpeed").checked = false;
     addEvent("click", document.getElementById("toggleDynamicSpeed"), function () {
              if (this.checked) {
                 Iodine.enableDynamicSpeed();

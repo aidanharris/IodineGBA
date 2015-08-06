@@ -18,7 +18,7 @@ function GameBoyAdvanceEmulator() {
         "timerIntervalRate":16,             //How often the emulator core is called into (in milliseconds).
         "emulatorSpeed":1,                  //Speed multiplier of the emulator.
         "metricCollectionMinimum":500,      //How many milliseconds of cycling to count before determining speed.
-        "dynamicSpeed":true                 //Whether to actively change the target speed for best user experience.
+        "dynamicSpeed":false                 //Whether to actively change the target speed for best user experience.
     }
     this.audioFound = false;                  //Do we have audio output sink found yet?
     this.loaded = false;                      //Did we initialize IodineGBA?
