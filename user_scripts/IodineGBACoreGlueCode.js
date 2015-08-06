@@ -28,7 +28,7 @@ window.onload = function () {
     registerGUIEvents();
 }
 function registerTimerHandler() {
-    var rate = 4;
+    var rate = 16;
     Iodine.setIntervalRate(rate | 0);
     setInterval(function () {
         //Check to see if web view is not hidden, if hidden don't run due to JS timers being inaccurate on page hide:
