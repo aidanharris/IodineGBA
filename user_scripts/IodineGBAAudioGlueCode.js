@@ -92,14 +92,18 @@ GlueCodeMixerInput.prototype.initialize = function (channelCount, sampleRate, bu
     this.bufferAmount = bufferAmount;
     this.volume = startingVolume;
     this.errorCallback = errorCallback;
+    var oldBuffer = this.buffer;
     this.buffer = new AudioBufferWrapper(this.channelCount,
                                          this.mixer.channelCount,
                                          this.bufferAmount,
                                          this.sampleRate,
                                          this.mixer.sampleRate);
-    
+    if (oldBuffer) {
+        //If re-using same mixer input node, copy old buffer contents into the new buffer:
+        this.buffer.copyOld(oldBuffer);
+    }
 }
-GlueCodeMixerInput.prototype.register = function (volume) {
+GlueCodeMixerInput.prototype.register = function () {
     this.mixer.appendInput(this);
 }
 GlueCodeMixerInput.prototype.changeVolume = function (volume) {
@@ -145,6 +149,24 @@ AudioBufferWrapper.prototype.initialize = function () {
     this.inputOffset = 0;
     this.resampleBufferStart = 0;
     this.resampleBufferEnd = 0;
+}
+AudioBufferWrapper.prototype.copyOld = function (oldBuffer) {
+    this.resampleRefill();
+    while (oldBuffer.resampleBufferStart != oldBuffer.resampleBufferEnd) {
+        this.outBuffer[this.resampleBufferEnd++] = oldBuffer.outBuffer[oldBuffer.resampleBufferStart++];
+        if (this.resampleBufferEnd == this.outBufferSize) {
+            this.resampleBufferEnd = 0;
+        }
+        if (this.resampleBufferStart == this.resampleBufferEnd) {
+            this.resampleBufferStart += this.mixerChannelCount;
+            if (this.resampleBufferStart == this.outBufferSize) {
+                this.resampleBufferStart = 0;
+            }
+        }
+        if (oldBuffer.resampleBufferStart == oldBuffer.outBufferSize) {
+            oldBuffer.resampleBufferStart = 0;
+        }
+    }
 }
 AudioBufferWrapper.prototype.push = function (buffer) {
     var length  = buffer.length;
