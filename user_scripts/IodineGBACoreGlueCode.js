@@ -16,6 +16,8 @@ var timerID = null;
 window.onload = function () {
     //Initialize Iodine:
     Iodine = new GameBoyAdvanceEmulator();
+    //Initialize the timer:
+    registerTimerHandler();
     //Initialize the graphics:
     registerBlitterHandler();
     //Initialize the audio:
@@ -24,6 +26,16 @@ window.onload = function () {
     registerSaveHandlers();
     //Hook the GUI controls.
     registerGUIEvents();
+}
+function registerTimerHandler() {
+    var rate = 16;
+    Iodine.setIntervalRate(rate | 0);
+    setInterval(function () {
+        //Check to see if web view is not hidden, if hidden don't run due to JS timers being inaccurate on page hide:
+        if (!document.hidden && !document.msHidden && !document.mozHidden && !document.webkitHidden) {
+                Iodine.timerCallback();
+        }
+    }, rate | 0);
 }
 function registerBlitterHandler() {
     Blitter = new GlueCodeGfx();
