@@ -102,6 +102,25 @@ if (__VIEWS_SUPPORTED__) {
             }
         }
     }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteNormalOBJWIN = function (xcoord, xcoordEnd) {
+        xcoord = xcoord | 0;
+        xcoordEnd = xcoordEnd | 0;
+        for (var xSource = 0; (xcoord | 0) < (xcoordEnd | 0); xcoord = ((xcoord | 0) + 1) | 0, xSource = ((xSource | 0) + 1) | 0) {
+            if ((xcoord | 0) > -1 && (this.scratchOBJBuffer[xSource | 0] | 0) != 0) {
+                this.scratchWindowBuffer[xcoord | 0] = 0;
+            }
+        }
+    }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteFlippedOBJWIN = function (xcoord, xcoordEnd, xSize) {
+        xcoord = xcoord | 0;
+        xcoordEnd = xcoordEnd | 0;
+        xSize = xSize | 0;
+        for (var xSource = ((xSize | 0) - 1) | 0; (xcoord | 0) < (xcoordEnd | 0); xcoord = ((xcoord | 0) + 1) | 0, xSource = ((xSource | 0) - 1) | 0) {
+            if ((xcoord | 0) > -1 && (this.scratchOBJBuffer[xSource | 0] | 0) != 0) {
+                this.scratchWindowBuffer[xcoord | 0] = 0;
+            }
+        }
+    }
 }
 else {
     GameBoyAdvanceOBJRenderer.prototype.initialize = function () {
@@ -139,6 +158,20 @@ else {
             //Overwrite by priority:
             if (xcoord > -1 && (pixel & 0x3800000) < (this.scratchBuffer[xcoord | this.offset] & 0x3800000)) {
                 this.scratchBuffer[xcoord | this.offset] = pixel;
+            }
+        }
+    }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteNormalOBJWIN = function (xcoord, xcoordEnd) {
+        for (var xSource = 0; xcoord < xcoordEnd; ++xcoord, ++xSource) {
+            if (xcoord > -1 && this.scratchOBJBuffer[xSource] != 0) {
+                this.scratchWindowBuffer[xcoord] = 0;
+            }
+        }
+    }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteFlippedOBJWIN = function (xcoord, xcoordEnd, xSize) {
+        for (var xSource = xSize - 1; xcoord < xcoordEnd; ++xcoord, --xSource) {
+            if (xcoord > -1 && this.scratchOBJBuffer[xSource] != 0) {
+                this.scratchWindowBuffer[xcoord] = 0;
             }
         }
     }
@@ -795,10 +828,13 @@ GameBoyAdvanceOBJRenderer.prototype.outputSpriteToOBJWINScratch = function (spri
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
-    for (var xSource = 0; (xcoord | 0) < (xcoordEnd | 0); xcoord = ((xcoord | 0) + 1) | 0, xSource = ((xSource | 0) + 1) | 0) {
-        if ((xcoord | 0) > -1 && (this.scratchOBJBuffer[xSource | 0] | 0) != 0) {
-            this.scratchWindowBuffer[xcoord | 0] = 0;
-        }
+    if ((sprite.horizontalFlip | 0) == 0 || (sprite.matrix2D | 0) != 0) {
+        //Normal:
+        this.outputSpriteNormalOBJWIN(xcoord | 0, xcoordEnd | 0);
+    }
+    else {
+        //Flipped Horizontally:
+        this.outputSpriteFlippedOBJWIN(xcoord | 0, xcoordEnd | 0, xSize | 0);
     }
 }
 GameBoyAdvanceOBJRenderer.prototype.isDrawable = function (sprite) {
