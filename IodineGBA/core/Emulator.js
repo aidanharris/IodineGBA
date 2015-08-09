@@ -15,11 +15,10 @@ function GameBoyAdvanceEmulator() {
         "audioBufferUnderrunLimit":100,     //Audio buffer minimum span amount over x milliseconds.
         "audioBufferDynamicLimit":32,       //Audio buffer dynamic minimum span amount over x milliseconds.
         "audioBufferSize":300,              //Audio buffer maximum span amount over x milliseconds.
-        "timerIntervalRate":16,             //How often the emulator core is called into (in milliseconds).
         "emulatorSpeed":1,                  //Speed multiplier of the emulator.
         "metricCollectionMinimum":500,      //How many milliseconds of cycling to count before determining speed.
-        "dynamicSpeed":false                 //Whether to actively change the target speed for best user experience.
-    }
+        "dynamicSpeed":false                //Whether to actively change the target speed for best user experience.
+    };
     this.audioFound = false;                  //Do we have audio output sink found yet?
     this.loaded = false;                      //Did we initialize IodineGBA?
     this.faultFound = false;                  //Did we run into a fatal error?
@@ -43,6 +42,7 @@ function GameBoyAdvanceEmulator() {
     this.metricStart = null;                  //Date object reference.
     this.dynamicSpeedCounter = 0;             //Rate limiter counter for dynamic speed.
     this.audioNumSamplesTotal = 0;            //Buffer size.
+    this.timerIntervalRate = 16;              //How often the emulator core is called into (in milliseconds).
     this.calculateTimings();                  //Calculate some multipliers against the core emulator timer.
     this.generateCoreExposed();               //Generate a limit API for the core to call this shell object.
 }
@@ -196,16 +196,17 @@ GameBoyAdvanceEmulator.prototype.resetMetrics = function () {
 GameBoyAdvanceEmulator.prototype.calculateTimings = function () {
     this.clocksPerSecond = this.settings.emulatorSpeed * 0x1000000;
     this.clocksPerMilliSecond = this.clocksPerSecond / 1000;
-    this.CPUCyclesTotal = this.CPUCyclesPerIteration = (this.clocksPerMilliSecond * (this.settings.timerIntervalRate | 0)) | 0;
+    this.CPUCyclesPerIteration = (this.clocksPerMilliSecond * (this.timerIntervalRate | 0)) | 0;
+    this.CPUCyclesTotal = this.CPUCyclesPerIteration | 0;
     this.dynamicSpeedCounter = 0;
-    this.metricCollectionMinimum = Math.max((this.settings.metricCollectionMinimum | 0) / (this.settings.timerIntervalRate | 0), 1) | 0;
+    this.metricCollectionMinimum = Math.max((this.settings.metricCollectionMinimum | 0) / (this.timerIntervalRate | 0), 1) | 0;
 }
 GameBoyAdvanceEmulator.prototype.setIntervalRate = function (intervalRate) {
     intervalRate = intervalRate | 0;
     if ((intervalRate | 0) > 0 && (intervalRate | 0) < 1000) {
         this.resetMetrics();
-        if ((intervalRate | 0) != (this.settings.timerIntervalRate | 0)) {
-            this.settings.timerIntervalRate = intervalRate | 0;
+        if ((intervalRate | 0) != (this.timerIntervalRate | 0)) {
+            this.timerIntervalRate = intervalRate | 0;
             this.calculateTimings();
             this.reinitializeAudio();
         }
@@ -217,7 +218,7 @@ GameBoyAdvanceEmulator.prototype.calculateSpeedPercentage = function () {
             if (this.speedCallback) {
                 var metricEnd = new Date();
                 var timeDiff = Math.max(metricEnd.getTime() - this.metricStart.getTime(), 1);
-                var result = ((this.settings.timerIntervalRate * (this.clockCyclesSinceStart | 0) / timeDiff) / (this.CPUCyclesPerIteration | 0)) * 100 * this.settings.emulatorSpeed;
+                var result = (((this.timerIntervalRate | 0) * (this.clockCyclesSinceStart | 0) / timeDiff) / (this.CPUCyclesPerIteration | 0)) * 100 * this.settings.emulatorSpeed;
                 this.speedCallback(result.toFixed(2) + "%");
             }
             this.resetMetrics();
@@ -309,8 +310,10 @@ GameBoyAdvanceEmulator.prototype.initializeAudioBuffering = function () {
     this.audioBufferDynamicContainAmount = Math.max(this.clocksPerMilliSecond * (this.settings.audioBufferDynamicLimit | 0) / this.audioResamplerFirstPassFactor, 2) << 1;
     var audioNumSamplesTotal = Math.max((this.CPUCyclesPerIteration | 0) / this.audioResamplerFirstPassFactor, 1) << 1;
     if ((audioNumSamplesTotal | 0) != (this.audioNumSamplesTotal | 0)) {
+        if ((audioNumSamplesTotal | 0) > (this.audioNumSamplesTotal | 0)) {
+            this.audioBuffer = getFloat32Array(audioNumSamplesTotal | 0);
+        }
         this.audioNumSamplesTotal = audioNumSamplesTotal | 0;
-        this.audioBuffer = getFloat32Array(this.audioNumSamplesTotal | 0);
     }
 }
 GameBoyAdvanceEmulator.prototype.changeVolume = function (newVolume) {
