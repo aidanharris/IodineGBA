@@ -128,6 +128,9 @@ GlueCodeMixerInput.prototype.registerStackPosition = function (stackPosition) {
 GlueCodeMixerInput.prototype.unregister = function () {
     this.mixer.unregister(this.stackPosition);
 }
+GlueCodeMixerInput.prototype.setBufferSpace = function (bufferAmount) {
+    this.buffer.setBufferSpace(bufferAmount);
+}
 function AudioBufferWrapper(channelCount,
                             mixerChannelCount,
                             bufferAmount,
@@ -222,6 +225,11 @@ AudioBufferWrapper.prototype.resampleRefill = function () {
             }
         }
         this.inputOffset = 0;
+    }
+}
+AudioBufferWrapper.prototype.setBufferSpace = function (bufferAmount) {
+    while (this.inputOffset < bufferAmount && this.inputOffset < this.inBufferSize) {
+        this.inBuffer[this.inputOffset++] = 0;
     }
 }
 AudioBufferWrapper.prototype.remainingBuffer = function () {

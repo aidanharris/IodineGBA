@@ -31,7 +31,13 @@ function registerTimerHandler() {
     setInterval(function () {
         //Check to see if web view is not hidden, if hidden don't run due to JS timers being inaccurate on page hide:
         if (!document.hidden && !document.msHidden && !document.mozHidden && !document.webkitHidden) {
-                Iodine.timerCallback();
+            if (document.getElementById("play").style.display == "none") {
+                Iodine.play();
+            }
+            Iodine.timerCallback();
+        }
+        else {
+            Iodine.pause();
         }
     }, rate | 0);
 }

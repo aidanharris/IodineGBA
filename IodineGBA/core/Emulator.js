@@ -66,6 +66,7 @@ GameBoyAdvanceEmulator.prototype.play = function () {
             this.loaded = true;
             this.importSave();
         }
+        this.setBufferSpace();
     }
 }
 GameBoyAdvanceEmulator.prototype.pause = function () {
@@ -88,6 +89,7 @@ GameBoyAdvanceEmulator.prototype.restart = function () {
         this.importSave();
         this.audioUpdateState = this.audioFound;
         this.setSpeed(1);
+        this.setBufferSpace();
     }
 }
 GameBoyAdvanceEmulator.prototype.timerCallback = function () {
@@ -392,6 +394,12 @@ GameBoyAdvanceEmulator.prototype.reinitializeAudio = function () {
     if (this.audioFound) {                    //Set up the audio again if enabled.
         this.disableAudio();
         this.enableAudio();
+    }
+}
+GameBoyAdvanceEmulator.prototype.setBufferSpace = function () {
+    if (this.audioFound) {
+        //Fill the audio system with zeros for buffer stabilization on start:
+        this.audio.setBufferSpace(this.audioBufferContainAmount | 0);
     }
 }
 GameBoyAdvanceEmulator.prototype.enableSkipBootROM = function () {
