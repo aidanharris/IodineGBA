@@ -10,8 +10,6 @@
  */
 var Iodine = null;
 var Blitter = null;
-var Mixer = null;
-var MixerInput = null;
 var timerID = null;
 window.onload = function () {
     //Initialize Iodine:
@@ -28,7 +26,7 @@ window.onload = function () {
     registerGUIEvents();
 }
 function registerTimerHandler() {
-    var rate = 16;
+    var rate = 10;
     Iodine.setIntervalRate(rate | 0);
     setInterval(function () {
         //Check to see if web view is not hidden, if hidden don't run due to JS timers being inaccurate on page hide:
@@ -43,8 +41,8 @@ function registerBlitterHandler() {
     Iodine.attachGraphicsFrameHandler(function (buffer) {Blitter.copyBuffer(buffer);});
 }
 function registerAudioHandler() {
-    Mixer = new GlueCodeMixer();
-    MixerInput = new GlueCodeMixerInput(Mixer);
+    var Mixer = new GlueCodeMixer();
+    var MixerInput = new GlueCodeMixerInput(Mixer);
     Iodine.attachAudioHandler(MixerInput);
     Iodine.enableAudio();
 }
