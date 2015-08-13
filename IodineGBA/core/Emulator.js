@@ -335,7 +335,7 @@ GameBoyAdvanceEmulator.prototype.outputAudio = function (downsampleInputLeft, do
     this.audioBuffer[this.audioDestinationPosition | 0] = (downsampleInputRight * this.audioDownSampleInputDivider) - 1;
     this.audioDestinationPosition = ((this.audioDestinationPosition | 0) + 1) | 0;
     if ((this.audioDestinationPosition | 0) == (this.audioNumSamplesTotal | 0)) {
-        this.audio.push(this.audioBuffer);
+        this.audio.push(this.audioBuffer, this.audioNumSamplesTotal | 0);
         this.audioDestinationPosition = 0;
     }
 }

@@ -1,6 +1,6 @@
 "use strict";
 /*
- Copyright (C) 2012-2014 Grant Galitz
+ Copyright (C) 2012-2015 Grant Galitz
  
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  
@@ -115,8 +115,8 @@ GlueCodeMixerInput.prototype.prepareShift = function () {
 GlueCodeMixerInput.prototype.shift = function () {
     return this.buffer.shift() * this.volume;
 }
-GlueCodeMixerInput.prototype.push = function (buffer) {
-    this.buffer.push(buffer);
+GlueCodeMixerInput.prototype.push = function (buffer, upTo) {
+    this.buffer.push(buffer, upTo);
     this.mixer.checkAudio();
 }
 GlueCodeMixerInput.prototype.remainingBuffer = function () {
@@ -171,8 +171,8 @@ AudioBufferWrapper.prototype.copyOld = function (oldBuffer) {
         }
     }
 }
-AudioBufferWrapper.prototype.push = function (buffer) {
-    var length  = buffer.length;
+AudioBufferWrapper.prototype.push = function (buffer, upTo) {
+    var length  = Math.min(buffer.length, upTo);
     if (this.channelCount < this.mixerChannelCount) {
         for (var bufferCounter = 0; bufferCounter < length && this.inputOffset < this.inBufferSize;) {
             for (var index = this.channelCount; index < this.mixerChannelCount; ++index) {
