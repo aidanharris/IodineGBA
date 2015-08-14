@@ -42,7 +42,7 @@ function GameBoyAdvanceEmulator() {
     this.metricStart = null;                  //Date object reference.
     this.dynamicSpeedCounter = 0;             //Rate limiter counter for dynamic speed.
     this.audioNumSamplesTotal = 0;            //Buffer size.
-    this.timerIntervalRate = 16;              //How often the emulator core is called into (in milliseconds).
+    this.timerIntervalRate = 4;               //How often the emulator core is called into (in milliseconds).
     this.calculateTimings();                  //Calculate some multipliers against the core emulator timer.
     this.generateCoreExposed();               //Generate a limit API for the core to call this shell object.
 }
@@ -360,7 +360,7 @@ GameBoyAdvanceEmulator.prototype.audioUnderrunAdjustment = function () {
                     }
                     this.dynamicSpeedCounter = ((this.dynamicSpeedCounter | 0) + 1) | 0;
                 }
-                this.CPUCyclesTotal = Math.min(((this.CPUCyclesTotal | 0) + ((underrunAmount >> 1) * this.audioResamplerFirstPassFactor)) | 0, this.CPUCyclesTotal << 1, 0x7FFFFFFF) | 0;
+                this.CPUCyclesTotal = Math.min(((this.CPUCyclesTotal | 0) + ((underrunAmount >> 1) * this.audioResamplerFirstPassFactor)) | 0, this.clocksPerMilliSecond << 5) | 0;
             }
             else if (this.settings.dynamicSpeed) {
                 if ((this.dynamicSpeedCounter | 0) > (this.metricCollectionMinimum | 0)) {
