@@ -1184,13 +1184,28 @@ GameBoyAdvanceGraphicsRenderer.prototype.writeBLDY8 = function (data) {
     this.colorEffectsRenderer.writeBLDY8(data | 0);
 }
 if (__LITTLE_ENDIAN__) {
-    GameBoyAdvanceGraphicsRenderer.prototype.writeVRAM8 = function (address, data) {
-        address = address | 0;
-        data = data | 0;
-        if ((address & 0x10000) == 0 || ((address & 0x17FFF) < 0x14000 && (this.displayControl & 0x7) >= 3)) {
-            this.graphicsJIT();
-            address = address & (((address & 0x10000) >> 1) ^ address);
-            this.VRAM16[(address >> 1) & 0xFFFF] = Math.imul(data & 0xFF, 0x101) | 0;
+    if (typeof Math.imul == "function") {
+        //Math.imul found, insert the optimized path in:
+        GameBoyAdvanceGraphicsRenderer.prototype.writeVRAM8 = function (address, data) {
+            address = address | 0;
+            data = data | 0;
+            if ((address & 0x10000) == 0 || ((address & 0x17FFF) < 0x14000 && (this.displayControl & 0x7) >= 3)) {
+                this.graphicsJIT();
+                address = address & (((address & 0x10000) >> 1) ^ address);
+                this.VRAM16[(address >> 1) & 0xFFFF] = Math.imul(data & 0xFF, 0x101) | 0;
+            }
+        }
+    }
+    else {
+        //Math.imul not found, use the compatibility method:
+        GameBoyAdvanceGraphicsRenderer.prototype.writeVRAM8 = function (address, data) {
+            address = address | 0;
+            data = data | 0;
+            if ((address & 0x10000) == 0 || ((address & 0x17FFF) < 0x14000 && (this.displayControl & 0x7) >= 3)) {
+                this.graphicsJIT();
+                address = address & (((address & 0x10000) >> 1) ^ address);
+                this.VRAM16[(address >> 1) & 0xFFFF] = (data & 0xFF) * 0x101;
+            }
         }
     }
     GameBoyAdvanceGraphicsRenderer.prototype.writeVRAM16 = function (address, data) {
