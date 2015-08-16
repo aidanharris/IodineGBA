@@ -97,12 +97,12 @@ GlueCodeMixer.prototype.disableAudio = function () {
 }
 function GlueCodeMixerInput(mixer) {
     this.mixer = mixer;
+    this.volume = 1;
 }
-GlueCodeMixerInput.prototype.initialize = function (channelCount, sampleRate, bufferAmount, startingVolume, errorCallback) {
+GlueCodeMixerInput.prototype.initialize = function (channelCount, sampleRate, bufferAmount, errorCallback) {
     this.channelCount = channelCount;
     this.sampleRate = sampleRate;
     this.bufferAmount = bufferAmount;
-    this.volume = startingVolume;
     this.errorCallback = errorCallback;
     var oldBuffer = this.buffer;
     this.buffer = new AudioBufferWrapper(this.channelCount,
@@ -118,8 +118,8 @@ GlueCodeMixerInput.prototype.initialize = function (channelCount, sampleRate, bu
 GlueCodeMixerInput.prototype.register = function () {
     this.mixer.appendInput(this);
 }
-GlueCodeMixerInput.prototype.changeVolume = function (volume) {
-    this.volume = volume;
+GlueCodeMixerInput.prototype.setVolume = function (volume) {
+    this.volume = Math.min(Math.max(volume, 0), 1);
 }
 GlueCodeMixerInput.prototype.prepareShift = function () {
     this.buffer.resampleRefill();

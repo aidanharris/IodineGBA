@@ -11,7 +11,6 @@
 function GameBoyAdvanceEmulator() {
     this.settings = {
         "SKIPBoot":false,                   //Skip the BIOS boot screen.
-        "audioVolume":1,                    //Starting audio volume.
         "audioBufferUnderrunLimit":100,     //Audio buffer minimum span amount over x milliseconds.
         "audioBufferDynamicLimit":32,       //Audio buffer dynamic minimum span amount over x milliseconds.
         "audioBufferSize":300,              //Audio buffer maximum span amount over x milliseconds.
@@ -288,7 +287,7 @@ GameBoyAdvanceEmulator.prototype.enableAudio = function () {
         this.audioSetState(true);    //Set audio to 'found' by default.
         //Attempt to enable audio:
         var parentObj = this;
-        this.audio.initialize(2, this.clocksPerSecond / this.audioResamplerFirstPassFactor, Math.max(this.clocksPerMilliSecond * this.settings.audioBufferSize / this.audioResamplerFirstPassFactor, 4) << 1, this.settings.audioVolume, function () {
+        this.audio.initialize(2, this.clocksPerSecond / this.audioResamplerFirstPassFactor, Math.max(this.clocksPerMilliSecond * this.settings.audioBufferSize / this.audioResamplerFirstPassFactor, 4) << 1, function () {
                                      //Disable audio in the callback here:
                                      parentObj.disableAudio();
         });
@@ -317,15 +316,6 @@ GameBoyAdvanceEmulator.prototype.initializeAudioBuffering = function () {
         }
         this.audioNumSamplesTotal = audioNumSamplesTotal | 0;
     }
-}
-GameBoyAdvanceEmulator.prototype.changeVolume = function (newVolume) {
-    this.settings.audioVolume = Math.min(Math.max(parseFloat(newVolume), 0), 1);
-    if (this.audioFound) {
-        this.audio.changeVolume(this.settings.audioVolume);
-    }
-}
-GameBoyAdvanceEmulator.prototype.incrementVolume = function (delta) {
-    this.changeVolume(parseFloat(delta) + this.settings.audioVolume);
 }
 GameBoyAdvanceEmulator.prototype.outputAudio = function (downsampleInputLeft, downsampleInputRight) {
     downsampleInputLeft = downsampleInputLeft | 0;
