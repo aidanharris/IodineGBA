@@ -198,13 +198,8 @@ function registerGUIEvents() {
         var speedDOM = document.getElementById("speed");
         speedDOM.textContent = "Speed: " + speed;
     });
-    addEvent("change", document.getElementById("volume"), function () {
-        try {
-             IodineGUI.settings.volume = Math.min(Math.max(parseInt(this.value), 0), 100) * 0.01;
-        }
-        catch (e) {}
-        IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
-    });
+    addEvent("change", document.getElementById("volume"), volChangeFunc);
+    addEvent("input", document.getElementById("volume"), volChangeFunc);
 }
 function registerGUISettings() {
     document.getElementById("sound").checked = IodineGUI.settings.sound;
@@ -241,26 +236,23 @@ function resetPlayButton() {
     document.getElementById("pause").style.display = "none";
     document.getElementById("play").style.display = "inline";
 }
-function lowerVolume() {
+function stepVolume(delta) {
+    var volume = IodineGUI.settings.volume;
+    volume = Math.min(Math.max(volume + delta, 0), 1);
+    IodineGUI.settings.volume = volume;
+    IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
     try {
-        var volume = parseInt(document.getElementById("volume").value);
-        volume = Math.min(Math.max(volume - 4, 0), 100);
-        document.getElementById("volume").value = volume;
+        document.getElementById("volume").value = Math.round(volume * 100);
     }
     catch (e) {}
-    IodineGUI.settings.volume = volume * 0.01;
-    IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
 }
-function raiseVolume() {
+function volChangeFunc() {
     try {
-        var volume = parseInt(document.getElementById("volume").value);
-        volume = Math.min(Math.max(volume + 4, 0), 100);
-        document.getElementById("volume").value = volume;
+        IodineGUI.settings.volume = Math.min(Math.max(parseInt(this.value), 0), 100) * 0.01;
     }
     catch (e) {}
-    IodineGUI.settings.volume = volume * 0.01;
     IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
-}
+};
 function writeRedTemporaryText(textString) {
     if (IodineGUI.timerID) {
         clearTimeout(IodineGUI.timerID);
