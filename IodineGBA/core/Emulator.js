@@ -36,12 +36,10 @@ function GameBoyAdvanceEmulator() {
     this.saveImportHandler = null;            //Save import handler attached by GUI.
     this.speedCallback = null;                //Speed report handler attached by GUI.
     this.graphicsFrameCallback = null;        //Graphics blitter handler attached by GUI.
-    this.clockCyclesSinceStart = 0;           //Clocking hueristics reference
-    this.metricCollectionCounted = 0;         //Clocking hueristics reference
-    this.metricStart = null;                  //Date object reference.
-    this.dynamicSpeedCounter = 0;             //Rate limiter counter for dynamic speed.
     this.audioNumSamplesTotal = 0;            //Buffer size.
     this.timerIntervalRate = 4;               //How often the emulator core is called into (in milliseconds).
+    this.lastTimestamp = 0;                   //Track the last time given in milliseconds.
+    this.dynamicSpeedRefresh = false;         //Whether speed is allowed to be changed dynamically in the current cycle.
     this.calculateTimings();                  //Calculate some multipliers against the core emulator timer.
     this.generateCoreExposed();               //Generate a limit API for the core to call this shell object.
 }
@@ -65,6 +63,7 @@ GameBoyAdvanceEmulator.prototype.play = function () {
             this.loaded = true;
             this.importSave();
         }
+        this.invalidateMetrics();
         this.setBufferSpace();
     }
 }
@@ -91,11 +90,13 @@ GameBoyAdvanceEmulator.prototype.restart = function () {
         this.setBufferSpace();
     }
 }
-GameBoyAdvanceEmulator.prototype.timerCallback = function () {
+GameBoyAdvanceEmulator.prototype.timerCallback = function (lastTimestamp) {
+    //Callback passes us a reference timestamp:
+    this.lastTimestamp = lastTimestamp | 0;
     if (!this.paused) {
         if (!this.faultFound && this.loaded) {                          //Any error pending or no ROM loaded is a show-stopper!
             this.iterationStartSequence();                              //Run start of iteration stuff.
-            this.IOCore.enter(this.CPUCyclesTotal | 0);               //Step through the emulation core loop.
+            this.IOCore.enter(this.CPUCyclesTotal | 0);                 //Step through the emulation core loop.
             this.iterationEndSequence();                                //Run end of iteration stuff.
         }
         else {
@@ -176,7 +177,6 @@ GameBoyAdvanceEmulator.prototype.exportSave = function () {
 GameBoyAdvanceEmulator.prototype.setSpeed = function (speed) {
     //0.003 for the integer resampler limitations, 0x3F for int math limitations:
     var speed = Math.min(Math.max(parseFloat(speed), 0.003), 0x3F);
-    this.resetMetrics();
     if (speed != this.settings.emulatorSpeed) {
         this.settings.emulatorSpeed = speed;
         this.calculateTimings();
@@ -189,23 +189,24 @@ GameBoyAdvanceEmulator.prototype.incrementSpeed = function (delta) {
 GameBoyAdvanceEmulator.prototype.getSpeed = function (speed) {
     return this.settings.emulatorSpeed;
 }
+GameBoyAdvanceEmulator.prototype.invalidateMetrics = function () {
+    this.clockCyclesSinceStart = 0;
+    this.metricStart = 0;
+}
 GameBoyAdvanceEmulator.prototype.resetMetrics = function () {
     this.clockCyclesSinceStart = 0;
-    this.metricCollectionCounted = 0;
-    this.metricStart = new Date();
+    this.metricStart = this.lastTimestamp | 0;
 }
 GameBoyAdvanceEmulator.prototype.calculateTimings = function () {
     this.clocksPerSecond = this.settings.emulatorSpeed * 0x1000000;
     this.clocksPerMilliSecond = this.clocksPerSecond / 1000;
     this.CPUCyclesPerIteration = (this.clocksPerMilliSecond * (this.timerIntervalRate | 0)) | 0;
     this.CPUCyclesTotal = this.CPUCyclesPerIteration | 0;
-    this.dynamicSpeedCounter = 0;
-    this.metricCollectionMinimum = Math.max((this.settings.metricCollectionMinimum | 0) / (this.timerIntervalRate | 0), 1) | 0;
+    this.invalidateMetrics();
 }
 GameBoyAdvanceEmulator.prototype.setIntervalRate = function (intervalRate) {
     intervalRate = intervalRate | 0;
     if ((intervalRate | 0) > 0 && (intervalRate | 0) < 1000) {
-        this.resetMetrics();
         if ((intervalRate | 0) != (this.timerIntervalRate | 0)) {
             this.timerIntervalRate = intervalRate | 0;
             this.calculateTimings();
@@ -214,21 +215,29 @@ GameBoyAdvanceEmulator.prototype.setIntervalRate = function (intervalRate) {
     }
 }
 GameBoyAdvanceEmulator.prototype.calculateSpeedPercentage = function () {
-    if (this.metricStart) {
-        if ((this.metricCollectionCounted | 0) >= (this.metricCollectionMinimum | 0)) {
+    if ((this.metricStart | 0) > 0) {
+        var timeDiff = Math.max((this.lastTimestamp | 0) - (this.metricStart | 0), 1);
+        if ((timeDiff | 0) >= (this.settings.metricCollectionMinimum | 0)) {
             if (this.speedCallback) {
-                var metricEnd = new Date();
-                var timeDiff = Math.max(metricEnd.getTime() - this.metricStart.getTime(), 1);
-                var result = (((this.timerIntervalRate | 0) * (this.clockCyclesSinceStart | 0) / timeDiff) / (this.CPUCyclesPerIteration | 0)) * 100 * this.settings.emulatorSpeed;
+                var result = ((this.clockCyclesSinceStart | 0) * 100000) / ((timeDiff | 0) * 0x1000000);
                 this.speedCallback(result.toFixed(2) + "%");
             }
+            //Reset counter for speed check:
             this.resetMetrics();
+            //Do a computation for dynamic speed this iteration:
+            this.dynamicSpeedRefresh = true;
+        }
+        else {
+            //Postpone any dynamic speed changes this iteration:
+            this.dynamicSpeedRefresh = false;
         }
     }
     else {
+        //Reset counter for speed check:
         this.resetMetrics();
+        //Postpone any dynamic speed changes this iteration:
+        this.dynamicSpeedRefresh = false;
     }
-    this.metricCollectionCounted = ((this.metricCollectionCounted | 0) + 1) | 0;
 }
 GameBoyAdvanceEmulator.prototype.initializeCore = function () {
     //Setup a new instance of the i/o core:
@@ -337,33 +346,21 @@ GameBoyAdvanceEmulator.prototype.audioUnderrunAdjustment = function () {
             remainingAmount = Math.max(remainingAmount | 0, 0) | 0;
             var underrunAmount = ((this.audioBufferContainAmount | 0) - (remainingAmount | 0)) | 0;
             if ((underrunAmount | 0) > 0) {
-                if (this.settings.dynamicSpeed) {
-                    if ((this.dynamicSpeedCounter | 0) > (this.metricCollectionMinimum | 0)) {
-                        if (((this.audioBufferDynamicContainAmount | 0) - (remainingAmount | 0)) > 0) {
-                            var speed = this.getSpeed();
-                            speed = Math.max(speed - 0.1, 0.1);
-                            this.setSpeed(speed);
-                        }
-                        else {
-                            this.dynamicSpeedCounter = this.metricCollectionMinimum | 0;
-                        }
+                if (this.dynamicSpeedRefresh && this.settings.dynamicSpeed) {
+                    if (((this.audioBufferDynamicContainAmount | 0) - (remainingAmount | 0)) > 0) {
+                        var speed = this.getSpeed();
+                        speed = Math.max(speed - 0.1, 0.1);
+                        this.setSpeed(speed);
                     }
-                    this.dynamicSpeedCounter = ((this.dynamicSpeedCounter | 0) + 1) | 0;
                 }
                 this.CPUCyclesTotal = Math.min(((this.CPUCyclesTotal | 0) + ((underrunAmount >> 1) * this.audioResamplerFirstPassFactor)) | 0, this.clocksPerMilliSecond << 5) | 0;
             }
-            else if (this.settings.dynamicSpeed) {
-                if ((this.dynamicSpeedCounter | 0) > (this.metricCollectionMinimum | 0)) {
-                    var speed = this.getSpeed();
-                    if (speed < 1) {
-                        speed = Math.min(speed + 0.05, 1);
-                        this.setSpeed(speed);
-                    }
-                    else {
-                        this.dynamicSpeedCounter = this.metricCollectionMinimum | 0;
-                    }
+            else if (this.dynamicSpeedRefresh && this.settings.dynamicSpeed) {
+                var speed = this.getSpeed();
+                if (speed < 1) {
+                    speed = Math.min(speed + 0.05, 1);
+                    this.setSpeed(speed);
                 }
-                this.dynamicSpeedCounter = ((this.dynamicSpeedCounter | 0) + 1) | 0;
             }
         }
     }
