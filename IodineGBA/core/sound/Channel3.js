@@ -104,9 +104,6 @@ if (__LITTLE_ENDIAN__) {
     GameBoyAdvanceChannel3Synth.prototype.writeWAVE8 = function (address, data) {
         address = address | 0;
         data = data | 0;
-        if (this.canPlay) {
-            this.sound.audioJIT();
-        }
         address = ((address | 0) + (this.WAVERAMBankAccessed >> 1)) | 0;
         this.WAVERAM8[address | 0] = data & 0xFF;
         var temp = ((data >> 4) & 0xF);
@@ -116,9 +113,6 @@ if (__LITTLE_ENDIAN__) {
     GameBoyAdvanceChannel3Synth.prototype.writeWAVE16 = function (address, data) {
         address = address | 0;
         data = data | 0;
-        if (this.canPlay) {
-            this.sound.audioJIT();
-        }
         address = ((address | 0) + (this.WAVERAMBankAccessed >> 2)) | 0;
         this.WAVERAM16[address | 0] = data & 0xFFFF;
         var temp = ((data >> 4) & 0xF);
@@ -130,9 +124,6 @@ if (__LITTLE_ENDIAN__) {
     GameBoyAdvanceChannel3Synth.prototype.writeWAVE32 = function (address, data) {
         address = address | 0;
         data = data | 0;
-        if (this.canPlay) {
-            this.sound.audioJIT();
-        }
         address = ((address | 0) + (this.WAVERAMBankAccessed >> 3)) | 0;
         this.WAVERAM32[address | 0] = data | 0;
         var temp = (data >> 4) & 0xF;
@@ -158,9 +149,6 @@ if (__LITTLE_ENDIAN__) {
 }
 else {
     GameBoyAdvanceChannel3Synth.prototype.writeWAVE8 = function (address, data) {
-        if (this.canPlay) {
-            this.sound.audioJIT();
-        }
         address += this.WAVERAMBankAccessed >> 1;
         this.WAVERAM8[address] = data & 0xFF;
         address <<= 1;
@@ -168,9 +156,6 @@ else {
         this.PCM[address | 1] = data & 0xF;
     }
     GameBoyAdvanceChannel3Synth.prototype.writeWAVE16 = function (address, data) {
-        if (this.canPlay) {
-            this.sound.audioJIT();
-        }
         address += this.WAVERAMBankAccessed >> 2;
         address <<= 1;
         this.WAVERAM8[address] = data & 0xFF;
@@ -182,9 +167,6 @@ else {
         this.PCM[address | 3] = (data >> 8) & 0xF;
     }
     GameBoyAdvanceChannel3Synth.prototype.writeWAVE32 = function (address, data) {
-        if (this.canPlay) {
-            this.sound.audioJIT();
-        }
         address += this.WAVERAMBankAccessed >> 3;
         address <<= 2;
         this.WAVERAM8[address] = data & 0xFF;

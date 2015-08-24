@@ -140,7 +140,7 @@ GameBoyAdvanceChannel2Synth.prototype.writeSOUND2CNT_L0 = function (data) {
             this.CachedDuty = 0x0FFFFFF0;
     }
     this.totalLength = (0x40 - (data & 0x3F)) | 0;
-    this.nr21 = data | 0;
+    this.nr21 = data & 0xFF;
     this.enableCheck();
 }
 GameBoyAdvanceChannel2Synth.prototype.readSOUND2CNT_L1 = function () {
@@ -151,13 +151,13 @@ GameBoyAdvanceChannel2Synth.prototype.writeSOUND2CNT_L1 = function (data) {
     data = data | 0;
     //NR22:
     this.envelopeType = ((data & 0x08) != 0);
-    this.nr22 = data | 0;
+    this.nr22 = data & 0xFF;
     this.volumeEnableCheck();
 }
 GameBoyAdvanceChannel2Synth.prototype.writeSOUND2CNT_H0 = function (data) {
     data = data | 0;
     //NR23:
-    this.frequency = (this.frequency & 0x700) | data;
+    this.frequency = (this.frequency & 0x700) | (data & 0xFF);
     this.FrequencyTracker = (0x800 - (this.frequency | 0)) << 4;
 }
 GameBoyAdvanceChannel2Synth.prototype.readSOUND2CNT_H = function () {
@@ -167,7 +167,7 @@ GameBoyAdvanceChannel2Synth.prototype.readSOUND2CNT_H = function () {
 GameBoyAdvanceChannel2Synth.prototype.writeSOUND2CNT_H1 = function (data) {
     data = data | 0;
     //NR24:
-    if (data > 0x7F) {
+    if ((data & 0x80) != 0) {
         //Reload nr22:
         this.envelopeVolume = this.nr22 >> 4;
         this.envelopeSweepsLast = ((this.nr22 & 0x7) - 1) | 0;
@@ -181,6 +181,6 @@ GameBoyAdvanceChannel2Synth.prototype.writeSOUND2CNT_H1 = function (data) {
     this.consecutive = ((data & 0x40) == 0x0);
     this.frequency = ((data & 0x7) << 8) | (this.frequency & 0xFF);
     this.FrequencyTracker = (0x800 - (this.frequency | 0)) << 4;
-    this.nr24 = data | 0;
+    this.nr24 = data & 0xFF;
     this.enableCheck();
 }

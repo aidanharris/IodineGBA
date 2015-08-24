@@ -255,10 +255,10 @@ GameBoyAdvanceChannel1Synth.prototype.writeSOUND1CNT8_3 = function (data) {
 GameBoyAdvanceChannel1Synth.prototype.writeSOUND1CNT_X0 = function (data) {
     data = data | 0;
     //NR13:
-    this.frequency = (this.frequency & 0x700) | data;
+    this.frequency = (this.frequency & 0x700) | (data & 0xFF);
     this.FrequencyTracker = (0x800 - (this.frequency | 0)) << 4;
 }
-GameBoyAdvanceChannel1Synth.prototype.readSOUND1CNT_X = function () {
+GameBoyAdvanceChannel1Synth.prototype.readSOUND1CNTX8 = function () {
     //NR14:
     return this.nr14 | 0;
 }
@@ -268,7 +268,7 @@ GameBoyAdvanceChannel1Synth.prototype.writeSOUND1CNT_X1 = function (data) {
     this.consecutive = ((data & 0x40) == 0);
     this.frequency = ((data & 0x7) << 8) | (this.frequency & 0xFF);
     this.FrequencyTracker = (0x800 - (this.frequency | 0)) << 4;
-    if (data > 0x7F) {
+    if ((data & 0x80) != 0) {
         //Reload nr10:
         this.timeSweep = this.lastTimeSweep | 0;
         this.Swept = false;
@@ -294,5 +294,5 @@ GameBoyAdvanceChannel1Synth.prototype.writeSOUND1CNT_X1 = function (data) {
         this.audioSweepPerformDummy();
     }
     this.enableCheck();
-    this.nr14 = data | 0;
+    this.nr14 = data & 0xFF;
 }
