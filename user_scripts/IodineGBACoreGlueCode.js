@@ -196,7 +196,7 @@ function registerGUIEvents() {
     addEvent("unload", window, ExportSave);
     IodineGUI.Iodine.attachSpeedHandler(function (speed) {
         var speedDOM = document.getElementById("speed");
-        speedDOM.textContent = "Speed: " + speed;
+        speedDOM.textContent = "Speed: " + speed.toFixed(2) + "%";
     });
     addEvent("change", document.getElementById("volume"), volChangeFunc);
     addEvent("input", document.getElementById("volume"), volChangeFunc);

@@ -220,7 +220,7 @@ GameBoyAdvanceEmulator.prototype.calculateSpeedPercentage = function () {
         if ((timeDiff | 0) >= (this.settings.metricCollectionMinimum | 0)) {
             if (this.speedCallback) {
                 var result = ((this.clockCyclesSinceStart | 0) * 100000) / ((timeDiff | 0) * 0x1000000);
-                this.speedCallback(result.toFixed(2) + "%");
+                this.speedCallback(result | 0);
             }
             //Reset counter for speed check:
             this.resetMetrics();
