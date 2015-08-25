@@ -17,13 +17,14 @@ GameBoyAdvanceSound.prototype.initialize = function () {
     this.dmaChannel1 = this.IOCore.dmaChannel1;
     this.dmaChannel2 = this.IOCore.dmaChannel2;
     //Did the emulator core initialize us for output yet?
-    this.preprocessInitialization(false);
+    this.preprocessInitialization(0);
     //Initialize start:
     this.audioTicks = 0;
     this.initializeAudioStartState();
 }
 GameBoyAdvanceSound.prototype.initializeOutput = function (enabled, audioResamplerFirstPassFactor) {
-    this.preprocessInitialization(enabled);
+    enabled = enabled | 0;
+    this.preprocessInitialization(enabled | 0);
     this.audioIndex = 0;
     this.downsampleInputLeft = 0;
     this.downsampleInputRight = 0;
@@ -212,13 +213,12 @@ GameBoyAdvanceSound.prototype.generateAudioFake = function (numSamples) {
     }
 }
 GameBoyAdvanceSound.prototype.preprocessInitialization = function (audioInitialized) {
-    if (audioInitialized) {
+    audioInitialized = audioInitialized | 0;
+    if ((audioInitialized | 0) != 0) {
         this.generateAudio = this.generateAudioReal;
-        this.audioInitialized = true;
     }
     else {
         this.generateAudio = this.generateAudioFake;
-        this.audioInitialized = false;
     }
 }
 GameBoyAdvanceSound.prototype.audioJIT = function () {

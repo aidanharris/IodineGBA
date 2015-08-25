@@ -69,7 +69,7 @@ function registerTimerHandler() {
             if (document.getElementById("play").style.display == "none") {
                 IodineGUI.Iodine.play();
             }
-            IodineGUI.Iodine.timerCallback((new Date()).getTime() >>> 0);
+            IodineGUI.Iodine.timerCallback(+(new Date()).getTime());
         }
         else {
             IodineGUI.Iodine.pause();
