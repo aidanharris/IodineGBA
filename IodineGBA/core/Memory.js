@@ -531,33 +531,28 @@ GameBoyAdvanceMemory.prototype.writeIODispatch8 = function (address, data) {
         //4000070h - SOUND3CNT_L (NR30) - Channel 3 Stop/Wave RAM select (R/W)
         case 0x4000070:
             //NR30:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_L(data & 0xFF);
+            this.sound.writeSOUND3CNT8_0(data | 0);
             break;
         //4000071h - SOUND3CNT_L (NR30) - Channel 3 Stop/Wave RAM select (R/W)
         //4000072h - SOUND3CNT_H (NR31, NR32) - Channel 3 Length/Volume (R/W)
         case 0x4000072:
             //NR31:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_H0(data & 0xFF);
+            this.sound.writeSOUND3CNT8_2(data | 0);
             break;
         //4000073h - SOUND3CNT_H (NR31, NR32) - Channel 3 Length/Volume (R/W)
         case 0x4000073:
             //NR32:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_H1(data & 0xFF);
+            this.sound.writeSOUND3CNT8_3(data | 0);
             break;
         //4000074h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         case 0x4000074:
             //NR33:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_X0(data & 0xFF);
+            this.sound.writeSOUND3CNTX8_0(data | 0);
             break;
         //4000075h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         case 0x4000075:
             //NR34:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_X1(data & 0xFF);
+            this.sound.writeSOUND3CNTX8_1(data | 0);
             break;
         //4000076h - NOT USED - ZERO
         //4000077h - NOT USED - ZERO
@@ -1342,24 +1337,19 @@ GameBoyAdvanceMemory.prototype.writeIODispatch16 = function (address, data) {
         //4000070h - SOUND3CNT_L (NR30) - Channel 3 Stop/Wave RAM select (R/W)
         case 0x4000070:
             //NR30:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_L(data & 0xFF);
+            this.sound.writeSOUND3CNT8_0(data | 0);
             break;
         //4000072h - SOUND3CNT_H (NR31, NR32) - Channel 3 Length/Volume (R/W)
         case 0x4000072:
             //NR31:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_H0(data & 0xFF);
             //NR32:
-            this.sound.writeSOUND3CNT_H1((data >> 8) & 0xFF);
+            this.sound.writeSOUND3CNT16(data | 0);
             break;
         //4000074h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         case 0x4000074:
             //NR33:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_X0(data & 0xFF);
             //NR34:
-            this.sound.writeSOUND3CNT_X1((data >> 8) & 0xFF);
+            this.sound.writeSOUND3CNTX16(data | 0);
             break;
         //4000076h - NOT USED - ZERO
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
@@ -1845,21 +1835,16 @@ GameBoyAdvanceMemory.prototype.writeIODispatch32 = function (address, data) {
         //4000072h - SOUND3CNT_H (NR31, NR32) - Channel 3 Length/Volume (R/W)
         case 0x4000070:
             //NR30:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_L(data & 0xFF);
             //NR31:
-            this.sound.writeSOUND3CNT_H0((data >> 16) & 0xFF);
             //NR32:
-            this.sound.writeSOUND3CNT_H1(data >>> 24);
+            this.sound.writeSOUND3CNT32(data | 0);
             break;
         //4000074h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         //4000076h - NOT USED - ZERO
         case 0x4000074:
             //NR33:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND3CNT_X0(data & 0xFF);
             //NR34:
-            this.sound.writeSOUND3CNT_X1((data >> 8) & 0xFF);
+            this.sound.writeSOUND3CNTX16(data | 0);
             break;
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         //400007Ah - NOT USED - ZERO
@@ -2773,17 +2758,17 @@ GameBoyAdvanceMemory.prototype.readIODispatch8 = function (address) {
         //4000070h - SOUND3CNT_L (NR30) - Channel 3 Stop/Wave RAM select (R/W)
         case 0x4000070:
             //NR30:
-            data = this.sound.readSOUND3CNT_L() | 0;
+            data = this.sound.readSOUND3CNT8_0() | 0;
             break;
         //4000073h - SOUND3CNT_H (NR31, NR32) - Channel 3 Length/Volume (R/W)
         case 0x4000073:
             //NR32:
-            data = this.sound.readSOUND3CNT_H() | 0;
+            data = this.sound.readSOUND3CNT8_3() | 0;
             break;
         //4000075h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         case 0x4000075:
             //NR34:
-            data = this.sound.readSOUND3CNT_X() | 0;
+            data = this.sound.readSOUND3CNTX8() | 0;
             break;
         //4000079h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000079:
@@ -3347,17 +3332,17 @@ GameBoyAdvanceMemory.prototype.readIO16 = function (address) {
         //4000070h - SOUND3CNT_L (NR30) - Channel 3 Stop/Wave RAM select (R/W)
         case 0x4000070:
             //NR30:
-            data = this.sound.readSOUND3CNT_L() | 0;
+            data = this.sound.readSOUND3CNT8_0() | 0;
             break;
         //4000073h - SOUND3CNT_H (NR31, NR32) - Channel 3 Length/Volume (R/W)
         case 0x4000072:
             //NR32:
-            data = this.sound.readSOUND3CNT_H() << 8;
+            data = this.sound.readSOUND3CNT16_1() | 0;
             break;
         //4000074h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         case 0x4000074:
             //NR34:
-            data = this.sound.readSOUND3CNT_X() << 8;
+            data = this.sound.readSOUND3CNTX16() | 0;
             break;
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000078:
@@ -3696,13 +3681,13 @@ GameBoyAdvanceMemory.prototype.readIO32 = function (address) {
         case 0x4000070:
             //NR30:
             //NR32:
-            data = this.sound.readSOUND3CNT_L() | (this.sound.readSOUND3CNT_H() << 24);
+            data = this.sound.readSOUND3CNT32() | 0;
             break;
         //4000074h - SOUND3CNT_X (NR33, NR34) - Channel 3 Frequency/Control (R/W)
         //4000076h - NOT USED - ZERO
         case 0x4000074:
             //NR34:
-            data = this.sound.readSOUND3CNT_X() << 8;
+            data = this.sound.readSOUND3CNTX16() | 0;
             break;
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         //400007Ah - NOT USED - ZERO

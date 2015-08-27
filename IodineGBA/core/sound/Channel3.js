@@ -227,22 +227,22 @@ GameBoyAdvanceChannel3Synth.prototype.readSOUND3CNT_L = function () {
 GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_L = function (data) {
     data = data | 0;
     //NR30:
-    if (!this.canPlay && (data | 0) >= 0x80) {
+    if (!this.canPlay && (data & 0x80) != 0) {
         this.lastSampleLookup = 0;
     }
-    this.canPlay = (data > 0x7F);
+    this.canPlay = ((data & 0x80) != 0);
     this.WaveRAMBankSize = (data & 0x20) | 0x1F;
     this.WAVERAMBankSpecified = ((data & 0x40) >> 1) ^ (data & 0x20);
     this.WAVERAMBankAccessed = ((data & 0x40) >> 1) ^ 0x20;
-    if (this.canPlay && (this.nr30 | 0) > 0x7F && !this.consecutive) {
+    if (this.canPlay && (this.nr30 & 0x80) != 0 && !this.consecutive) {
         this.sound.setNR52(0x4);
     }
-    this.nr30 = data | 0;
+    this.nr30 = data & 0xFF;
 }
 GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_H0 = function (data) {
     data = data | 0;
     //NR31:
-    this.totalLength = (0x100 - (data | 0)) | 0;
+    this.totalLength = (0x100 - (data & 0xFF)) | 0;
     this.enableCheck();
 }
 GameBoyAdvanceChannel3Synth.prototype.readSOUND3CNT_H = function () {
@@ -252,6 +252,7 @@ GameBoyAdvanceChannel3Synth.prototype.readSOUND3CNT_H = function () {
 GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_H1 = function (data) {
     data = data | 0;
     //NR32:
+    data = data & 0xFF;
     switch (data >> 5) {
         case 0:
             this.patternType = 4;
@@ -273,7 +274,7 @@ GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_H1 = function (data) {
 GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_X0 = function (data) {
     data = data | 0;
     //NR33:
-    this.frequency = (this.frequency & 0x700) | data;
+    this.frequency = (this.frequency & 0x700) | (data & 0xFF);
     this.FrequencyPeriod = (0x800 - (this.frequency | 0)) << 3;
 }
 GameBoyAdvanceChannel3Synth.prototype.readSOUND3CNT_X = function () {
@@ -283,7 +284,7 @@ GameBoyAdvanceChannel3Synth.prototype.readSOUND3CNT_X = function () {
 GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_X1 = function (data) {
     data = data | 0;
     //NR34:
-    if ((data | 0) > 0x7F) {
+    if ((data & 0x80) != 0) {
         if ((this.totalLength | 0) == 0) {
             this.totalLength = 0x100;
         }
@@ -296,5 +297,5 @@ GameBoyAdvanceChannel3Synth.prototype.writeSOUND3CNT_X1 = function (data) {
     this.frequency = ((data & 0x7) << 8) | (this.frequency & 0xFF);
     this.FrequencyPeriod = (0x800 - (this.frequency | 0)) << 3;
     this.enableCheck();
-    this.nr34 = data | 0;
+    this.nr34 = data & 0xFF;
 }
