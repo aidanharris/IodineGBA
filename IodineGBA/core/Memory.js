@@ -559,71 +559,59 @@ GameBoyAdvanceMemory.prototype.writeIODispatch8 = function (address, data) {
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000078:
             //NR41:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_L0(data & 0xFF);
+            this.sound.writeSOUND4CNTL8_0(data | 0);
             break;
         //4000079h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000079:
             //NR42:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_L1(data & 0xFF);
+            this.sound.writeSOUND4CNTL8_1(data | 0);
             break;
         //400007Ah - NOT USED - ZERO
         //400007Bh - NOT USED - ZERO
         //400007Ch - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         case 0x400007C:
             //NR43:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_H0(data & 0xFF);
+            this.sound.writeSOUND4CNTH8_0(data | 0);
             break;
         //400007Dh - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         case 0x400007D:
             //NR44:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_H1(data & 0xFF);
+            this.sound.writeSOUND4CNTH8_1(data | 0);
             break;
         //400007Eh - NOT USED - ZERO
         //400007Fh - NOT USED - ZERO
         //4000080h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         case 0x4000080:
             //NR50:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_L0(data & 0xFF);
+            this.sound.writeSOUNDCNTL8_0(data | 0);
             break;
         //4000081h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         case 0x4000081:
             //NR51:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_L1(data & 0xFF);
+            this.sound.writeSOUNDCNTL8_1(data | 0);
             break;
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000082:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_H0(data & 0xFF);
+            this.sound.writeSOUNDCNTH8_0(data | 0);
             break;
         //4000083h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000083:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_H1(data & 0xFF);
-            this.IOCore.updateCoreEventTime();
+            this.sound.writeSOUNDCNTH8_1(data | 0);
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         case 0x4000084:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_X(data & 0xFF);
+            this.sound.writeSOUNDCNTX8(data | 0);
             break;
         //4000085h - NOT USED - ZERO
         //4000086h - NOT USED - ZERO
         //4000087h - NOT USED - ZERO
         //4000088h - SOUNDBIAS - Sound PWM Control (R/W)
         case 0x4000088:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDBIAS0(data & 0xFF);
+            this.sound.writeSOUNDBIAS8_0(data | 0);
             break;
         //4000089h - SOUNDBIAS - Sound PWM Control (R/W)
         case 0x4000089:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDBIAS1(data & 0xFF);
+            this.sound.writeSOUNDBIAS8_1(data | 0);
             break;
         //400008Ah through 400008Fh - NOT USED - ZERO/GLITCHED
         //4000090h - WAVE_RAM0_L - Channel 3 Wave Pattern RAM (W/R)
@@ -1104,11 +1092,11 @@ GameBoyAdvanceMemory.prototype.writeIODispatch8 = function (address, data) {
             break;
         //4000204h - WAITCNT - Waitstate Control (R/W)
         case 0x4000204:
-            this.wait.writeWAITCNT0(data & 0xFF);
+            this.wait.writeWAITCNT8_0(data | 0);
             break;
         //4000205h - WAITCNT - Waitstate Control (R/W)
         case 0x4000205:
-            this.wait.writeWAITCNT1(data & 0xFF);
+            this.wait.writeWAITCNT8_1(data | 0);
             break;
         //4000206h - WAITCNT - Waitstate Control (R/W)
         //4000207h - WAITCNT - Waitstate Control (R/W)
@@ -1119,16 +1107,16 @@ GameBoyAdvanceMemory.prototype.writeIODispatch8 = function (address, data) {
         //4000209h through 40002FFh - NOT USED - GLITCHED
         //4000300h - POSTFLG - BYTE - Undocumented - Post Boot / Debug Control (R/W)
         case 0x4000300:
-            this.wait.writePOSTBOOT(data & 0xFF);
+            this.wait.writePOSTBOOT(data | 0);
             break;
         //4000301h - HALTCNT - BYTE - Undocumented - Low Power Mode Control (W)
         case 0x4000301:
-            this.wait.writeHALTCNT(data & 0xFF);
+            this.wait.writeHALTCNT(data | 0);
             break;
         default:
             if ((address & 0xFFFC) == 0x800) {
                 //WRAM wait state control:
-                this.wait.writeConfigureWRAM8(address | 0, data & 0xFF);
+                this.wait.writeConfigureWRAM8(address | 0, data | 0);
             }
     }
 }
@@ -1355,48 +1343,35 @@ GameBoyAdvanceMemory.prototype.writeIODispatch16 = function (address, data) {
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000078:
             //NR41:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_L0(data & 0xFF);
             //NR42:
-            this.sound.writeSOUND4CNT_L1((data >> 8) & 0xFF);
+            this.sound.writeSOUND4CNTL16(data | 0);
             break;
         //400007Ah - NOT USED - ZERO
         //400007Ch - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         case 0x400007C:
             //NR43:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_H0(data & 0xFF);
             //NR44:
-            this.sound.writeSOUND4CNT_H1((data >> 8) & 0xFF);
+            this.sound.writeSOUND4CNTH16(data | 0);
             break;
         //400007Eh - NOT USED - ZERO
         //4000080h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         case 0x4000080:
             //NR50:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_L0(data & 0xFF);
             //NR51:
-            this.sound.writeSOUNDCNT_L1((data >> 8) & 0xFF);
+            this.sound.writeSOUNDCNTL16(data | 0);
             break;
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000082:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_H0(data & 0xFF);
-            this.sound.writeSOUNDCNT_H1((data >> 8) & 0xFF);
-            this.IOCore.updateCoreEventTime();
+            this.sound.writeSOUNDCNTH16(data | 0);
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         case 0x4000084:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_X(data & 0xFF);
-            this.IOCore.updateCoreEventTime();
+            this.sound.writeSOUNDCNTX8(data | 0);
             break;
         //4000086h - NOT USED - ZERO
         //4000088h - SOUNDBIAS - Sound PWM Control (R/W)
         case 0x4000088:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDBIAS0(data & 0xFF);
-            this.sound.writeSOUNDBIAS1((data >> 8) & 0xFF);
+            this.sound.writeSOUNDBIAS16(data | 0);
             break;
         //400008Ah through 400008Fh - NOT USED - ZERO/GLITCHED
         //4000090h - WAVE_RAM0_L - Channel 3 Wave Pattern RAM (W/R)
@@ -1415,7 +1390,7 @@ GameBoyAdvanceMemory.prototype.writeIODispatch16 = function (address, data) {
         case 0x400009C:
         //400009Eh - WAVE_RAM3_H - Channel 3 Wave Pattern RAM (W/R)
         case 0x400009E:
-            this.sound.writeWAVE16(address & 0xF, data | 0);
+            this.sound.writeWAVE16(address & 0xE, data | 0);
             break;
         //40000A0h - FIFO_A_L - FIFO Channel A First Word (W)
         case 0x40000A0:
@@ -1668,8 +1643,7 @@ GameBoyAdvanceMemory.prototype.writeIODispatch16 = function (address, data) {
             break;
         //4000204h - WAITCNT - Waitstate Control (R/W)
         case 0x4000204:
-            this.wait.writeWAITCNT0(data & 0xFF);
-            this.wait.writeWAITCNT1((data >> 8) & 0xFF);
+            this.wait.writeWAITCNT16(data | 0);
             break;
         //4000206h - WAITCNT - Waitstate Control (R/W)
         //4000208h - IME - Interrupt Master Enable Register (R/W)
@@ -1679,13 +1653,12 @@ GameBoyAdvanceMemory.prototype.writeIODispatch16 = function (address, data) {
         //4000209h through 40002FFh - NOT USED - GLITCHED
         //4000300h - POSTFLG - BYTE - Undocumented - Post Boot / Debug Control (R/W)
         case 0x4000300:
-            this.wait.writePOSTBOOT(data & 0xFF);
-            this.wait.writeHALTCNT((data >> 8) & 0xFF);
+            this.wait.writeHALT16(data | 0);
             break;
         default:
             if ((address & 0xFFFC) == 0x800) {
                 //WRAM wait state control:
-                this.wait.writeConfigureWRAM16(address | 0, data & 0xFFFF);
+                this.wait.writeConfigureWRAM16(address | 0, data | 0);
             }
     }
 }
@@ -1850,43 +1823,31 @@ GameBoyAdvanceMemory.prototype.writeIODispatch32 = function (address, data) {
         //400007Ah - NOT USED - ZERO
         case 0x4000078:
             //NR41:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_L0(data & 0xFF);
             //NR42:
-            this.sound.writeSOUND4CNT_L1((data >> 8) & 0xFF);
+            this.sound.writeSOUND4CNTL16(data | 0);
             break;
         //400007Ch - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         //400007Eh - NOT USED - ZERO
         case 0x400007C:
             //NR43:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUND4CNT_H0(data & 0xFF);
             //NR44:
-            this.sound.writeSOUND4CNT_H1((data >> 8) & 0xFF);
+            this.sound.writeSOUND4CNTH16(data | 0);
             break;
         //4000080h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000080:
             //NR50:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_L0(data & 0xFF);
             //NR51:
-            this.sound.writeSOUNDCNT_L1((data >> 8) & 0xFF);
-            this.sound.writeSOUNDCNT_H0((data >> 16) & 0xFF);
-            this.sound.writeSOUNDCNT_H1(data >>> 24);
-            this.IOCore.updateCoreEventTime();
+            this.sound.writeSOUNDCNT32(data | 0);
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         //4000086h - NOT USED - ZERO
         case 0x4000084:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDCNT_X(data & 0xFF);
+            this.sound.writeSOUNDCNTX8(data | 0);
             break;
         //4000088h - SOUNDBIAS - Sound PWM Control (R/W)
         case 0x4000088:
-            this.IOCore.updateTimerClocking();
-            this.sound.writeSOUNDBIAS0(data & 0xFF);
-            this.sound.writeSOUNDBIAS1((data >> 8) & 0xFF);
+            this.sound.writeSOUNDBIAS16(data | 0);
             break;
         //400008Ah through 400008Fh - NOT USED - ZERO/GLITCHED
         //4000090h - WAVE_RAM0_L - Channel 3 Wave Pattern RAM (W/R)
@@ -1901,7 +1862,7 @@ GameBoyAdvanceMemory.prototype.writeIODispatch32 = function (address, data) {
         //400009Ch - WAVE_RAM3_L - Channel 3 Wave Pattern RAM (W/R)
         //400009Eh - WAVE_RAM3_H - Channel 3 Wave Pattern RAM (W/R)
         case 0x400009C:
-            this.sound.writeWAVE32(address & 0xF, data | 0);
+            this.sound.writeWAVE32(address & 0xC, data | 0);
             break;
         //40000A0h - FIFO_A_L - FIFO Channel A First Word (W)
         //40000A2h - FIFO_A_H - FIFO Channel A Second Word (W)
@@ -2082,8 +2043,7 @@ GameBoyAdvanceMemory.prototype.writeIODispatch32 = function (address, data) {
         //4000204h - WAITCNT - Waitstate Control (R/W)
         //4000206h - WAITCNT - Waitstate Control (R/W)
         case 0x4000204:
-            this.wait.writeWAITCNT0(data & 0xFF);
-            this.wait.writeWAITCNT1((data >> 8) & 0xFF);
+            this.wait.writeWAITCNT16(data | 0);
             break;
         //4000208h - IME - Interrupt Master Enable Register (R/W)
         case 0x4000208:
@@ -2093,8 +2053,7 @@ GameBoyAdvanceMemory.prototype.writeIODispatch32 = function (address, data) {
         //4000300h - POSTFLG - BYTE - Undocumented - Post Boot / Debug Control (R/W)
         //4000302h - NOT USED - ZERO
         case 0x4000300:
-            this.wait.writePOSTBOOT(data & 0xFF);
-            this.wait.writeHALTCNT((data >> 8) & 0xFF);
+            this.wait.writeHALT16(data | 0);
             break;
         default:
             if ((address & 0xFFFC) == 0x800) {
@@ -2773,48 +2732,47 @@ GameBoyAdvanceMemory.prototype.readIODispatch8 = function (address) {
         //4000079h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000079:
             //NR42:
-            data = this.sound.readSOUND4CNT_L() | 0;
+           data = this.sound.readSOUND4CNTL8() | 0;
             break;
         //400007Ch - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         case 0x400007C:
             //NR43:
-            data = this.sound.readSOUND4CNT_H0() | 0;
+            data = this.sound.readSOUND4CNTH8_0() | 0;
             break;
         //400007Dh - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         case 0x400007D:
             //NR44:
-            data = this.sound.readSOUND4CNT_H1() | 0;
+            data = this.sound.readSOUND4CNTH8_1() | 0;
             break;
         //4000080h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         case 0x4000080:
             //NR50:
-            data = this.sound.readSOUNDCNT_L0() | 0;
+            data = this.sound.readSOUNDCNTL8_0() | 0;
             break;
         //4000081h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         case 0x4000081:
             //NR51:
-            data = this.sound.readSOUNDCNT_L1() | 0;
+            data = this.sound.readSOUNDCNTL8_1() | 0;
             break;
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000082:
-            data = this.sound.readSOUNDCNT_H0() | 0;
+            data = this.sound.readSOUNDCNTH8_0() | 0;
             break;
         //4000083h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000083:
-            data = this.sound.readSOUNDCNT_H1() | 0;
+            data = this.sound.readSOUNDCNTH8_1() | 0;
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         case 0x4000084:
-            this.IOCore.updateTimerClocking();
-            data = this.sound.readSOUNDCNT_X() | 0;
+            data = this.sound.readSOUNDCNTX8() | 0;
             break;
         //4000088h - SOUNDBIAS - Sound PWM Control (R/W, see below)
         case 0x4000088:
-            data = this.sound.readSOUNDBIAS0() | 0;
+            data = this.sound.readSOUNDBIAS8_0() | 0;
             break;
         //4000089h - SOUNDBIAS - Sound PWM Control (R/W, see below)
         case 0x4000089:
-            data = this.sound.readSOUNDBIAS1() | 0;
+            data = this.sound.readSOUNDBIAS8_1() | 0;
             break;
         //400008Ch - NOT USED - GLITCHED
         //400008Dh - NOT USED - GLITCHED
@@ -3098,11 +3056,11 @@ GameBoyAdvanceMemory.prototype.readIODispatch8 = function (address) {
             break;
         //4000204h - WAITCNT - Waitstate Control (R/W)
         case 0x4000204:
-            data = this.wait.readWAITCNT0() | 0;
+            data = this.wait.readWAITCNT8_0() | 0;
             break;
         //4000205h - WAITCNT - Waitstate Control (R/W)
         case 0x4000205:
-            data = this.wait.readWAITCNT1() | 0;
+            data = this.wait.readWAITCNT8_1() | 0;
             break;
         //4000208h - IME - Interrupt Master Enable Register (R/W)
         case 0x4000208:
@@ -3347,32 +3305,31 @@ GameBoyAdvanceMemory.prototype.readIO16 = function (address) {
         //4000078h - SOUND4CNT_L (NR41, NR42) - Channel 4 Length/Envelope (R/W)
         case 0x4000078:
             //NR42:
-            data = this.sound.readSOUND4CNT_L() << 8;
+            data = this.sound.readSOUND4CNTL16() | 0;
             break;
         //400007Ch - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         case 0x400007C:
             //NR43:
             //NR44:
-            data = this.sound.readSOUND4CNT_H0() | (this.sound.readSOUND4CNT_H1() << 8);
+            data = this.sound.readSOUND4CNTH16() | 0;
             break;
         //4000080h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         case 0x4000080:
             //NR50:
             //NR51:
-            data = this.sound.readSOUNDCNT_L0() | (this.sound.readSOUNDCNT_L1() << 8);
+            data = this.sound.readSOUNDCNTL16() | 0;
             break;
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000082:
-            data = this.sound.readSOUNDCNT_H0() | (this.sound.readSOUNDCNT_H1() << 8);
+            data = this.sound.readSOUNDCNTL16() | 0;
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         case 0x4000084:
-            this.IOCore.updateTimerClocking();
-            data = this.sound.readSOUNDCNT_X() | 0;
+            data = this.sound.readSOUNDCNTX8() | 0;
             break;
         //4000088h - SOUNDBIAS - Sound PWM Control (R/W, see below)
         case 0x4000088:
-            data = this.sound.readSOUNDBIAS0() | (this.sound.readSOUNDBIAS1() << 8);
+            data = this.sound.readSOUNDBIAS16() | 0;
             break;
         //400008Ch - NOT USED - GLITCHED
         //400008Eh - NOT USED - GLITCHED
@@ -3535,7 +3492,7 @@ GameBoyAdvanceMemory.prototype.readIO16 = function (address) {
             break;
         //4000204h - WAITCNT - Waitstate Control (R/W)
         case 0x4000204:
-            data = this.wait.readWAITCNT0() | (this.wait.readWAITCNT1() << 8);
+            data = this.wait.readWAITCNT16() | 0;
             break;
         //4000208h - IME - Interrupt Master Enable Register (R/W)
         case 0x4000208:
@@ -3693,35 +3650,31 @@ GameBoyAdvanceMemory.prototype.readIO32 = function (address) {
         //400007Ah - NOT USED - ZERO
         case 0x4000078:
             //NR42:
-            data = this.sound.readSOUND4CNT_L() << 8;
+            data = this.sound.readSOUND4CNTL16() | 0;
             break;
         //400007Ch - SOUND4CNT_H (NR43, NR44) - Channel 4 Frequency/Control (R/W)
         //400007Eh - NOT USED - ZERO
         case 0x400007C:
             //NR43:
             //NR44:
-            data = this.sound.readSOUND4CNT_H0() | (this.sound.readSOUND4CNT_H1() << 8);
+            data = this.sound.readSOUND4CNTH16() | 0;
             break;
         //4000080h - SOUNDCNT_L (NR50, NR51) - Channel L/R Volume/Enable (R/W)
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000080:
             //NR50:
             //NR51:
-            data = this.sound.readSOUNDCNT_L0() |
-            (this.sound.readSOUNDCNT_L1() << 8) |
-            (this.sound.readSOUNDCNT_H0() << 16) |
-            (this.sound.readSOUNDCNT_H1() << 24);
+            data = this.sound.readSOUNDCNT32() | 0;
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         //4000086h - NOT USED - ZERO
         case 0x4000084:
-            this.IOCore.updateTimerClocking();
-            data = this.sound.readSOUNDCNT_X() | 0;
+            data = this.sound.readSOUNDCNTX8() | 0;
             break;
         //4000088h - SOUNDBIAS - Sound PWM Control (R/W, see below)
         //400008Ah - NOT USED - ZERO
         case 0x4000088:
-            data = this.sound.readSOUNDBIAS0() | (this.sound.readSOUNDBIAS1() << 8);
+            data = this.sound.readSOUNDBIAS16() | 0;
             break;
         //400008Ch - NOT USED - GLITCHED
         //400008Eh - NOT USED - GLITCHED
@@ -3861,7 +3814,7 @@ GameBoyAdvanceMemory.prototype.readIO32 = function (address) {
         //4000204h - WAITCNT - Waitstate Control (R/W)
         //4000206h - NOT USED - ZERO
         case 0x4000204:
-            data = this.wait.readWAITCNT0() | (this.wait.readWAITCNT1() << 8);
+            data = this.wait.readWAITCNT16() | 0;
             break;
         //4000208h - IME - Interrupt Master Enable Register (R/W)
         //400020Ah - NOT USED - ZERO
