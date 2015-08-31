@@ -3321,7 +3321,7 @@ GameBoyAdvanceMemory.prototype.readIO16 = function (address) {
             break;
         //4000082h - SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
         case 0x4000082:
-            data = this.sound.readSOUNDCNTL16() | 0;
+            data = this.sound.readSOUNDCNTH16() | 0;
             break;
         //4000084h - SOUNDCNT_X (NR52) - Sound on/off (R/W)
         case 0x4000084:
