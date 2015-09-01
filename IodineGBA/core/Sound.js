@@ -16,15 +16,19 @@ GameBoyAdvanceSound.prototype.initialize = function () {
     this.coreExposed = this.IOCore.coreExposed;
     this.dmaChannel1 = this.IOCore.dmaChannel1;
     this.dmaChannel2 = this.IOCore.dmaChannel2;
-    //Did the emulator core initialize us for output yet?
-    this.preprocessInitialization(0);
     //Initialize start:
     this.audioTicks = 0;
+    this.initializeSampling(380);
     this.initializeAudioStartState();
 }
-GameBoyAdvanceSound.prototype.initializeOutput = function (enabled, audioResamplerFirstPassFactor) {
-    enabled = enabled | 0;
-    this.preprocessInitialization(enabled | 0);
+GameBoyAdvanceSound.prototype.initializeOutput = function (audioResamplerFirstPassFactor) {
+    audioResamplerFirstPassFactor = audioResamplerFirstPassFactor | 0;
+    if ((audioResamplerFirstPassFactor | 0) != (this.audioResamplerFirstPassFactor | 0)) {
+        this.initializeSampling(audioResamplerFirstPassFactor | 0);
+    }
+}
+GameBoyAdvanceSound.prototype.initializeSampling = function (audioResamplerFirstPassFactor) {
+    audioResamplerFirstPassFactor = audioResamplerFirstPassFactor | 0;
     this.audioIndex = 0;
     this.downsampleInputLeft = 0;
     this.downsampleInputRight = 0;
@@ -34,10 +38,10 @@ GameBoyAdvanceSound.prototype.initializeAudioStartState = function () {
     //NOTE: NR 60-63 never get reset in audio halting:
     this.nr60 = 0;
     this.nr61 = 0;
-    this.nr62 = (this.IOCore.BIOSFound && !this.IOCore.settings.SKIPBoot) ? 0 : 0xFF;
-    this.nr63 = (this.IOCore.BIOSFound && !this.IOCore.settings.SKIPBoot) ? 0 : 0x2;
-    this.soundMasterEnabled = (!this.IOCore.BIOSFound || this.IOCore.settings.SKIPBoot);
-    this.mixerSoundBIAS = (this.IOCore.BIOSFound && !this.IOCore.settings.SKIPBoot) ? 0 : 0x200;
+    this.nr62 = (!this.IOCore.SKIPBoot) ? 0 : 0xFF;
+    this.nr63 = (!this.IOCore.SKIPBoot) ? 0 : 0x2;
+    this.soundMasterEnabled = !!this.IOCore.SKIPBoot;
+    this.mixerSoundBIAS = (!this.IOCore.SKIPBoot) ? 0 : 0x200;
     this.channel1 = new GameBoyAdvanceChannel1Synth(this);
     this.channel2 = new GameBoyAdvanceChannel2Synth(this);
     this.channel3 = new GameBoyAdvanceChannel3Synth(this);
@@ -107,7 +111,7 @@ GameBoyAdvanceSound.prototype.addClocks = function (clocks) {
 }
 if (typeof Math.imul == "function") {
     //Math.imul found, insert the optimized path in:
-    GameBoyAdvanceSound.prototype.generateAudioReal = function (numSamples) {
+    GameBoyAdvanceSound.prototype.generateAudio = function (numSamples) {
         numSamples = numSamples | 0;
         var multiplier = 0;
         if (this.soundMasterEnabled && !this.IOCore.isStopped()) {
@@ -153,7 +157,7 @@ if (typeof Math.imul == "function") {
 }
 else {
     //Math.imul not found, use the compatibility method:
-    GameBoyAdvanceSound.prototype.generateAudioReal = function (numSamples) {
+    GameBoyAdvanceSound.prototype.generateAudio = function (numSamples) {
         var multiplier = 0;
         if (this.soundMasterEnabled && !this.IOCore.isStopped()) {
             for (var clockUpTo = 0; numSamples > 0;) {
@@ -194,31 +198,6 @@ else {
                 }
             }
         }
-    }
-}
-//Generate audio, but don't actually output it (Used for when sound is disabled by user/browser):
-GameBoyAdvanceSound.prototype.generateAudioFake = function (numSamples) {
-    numSamples = numSamples | 0;
-    if (this.soundMasterEnabled && !this.IOCore.isStopped()) {
-        for (var clockUpTo = 0; (numSamples | 0) > 0;) {
-            clockUpTo = Math.min(this.PWMWidth | 0, numSamples | 0) | 0;
-            this.PWMWidth = ((this.PWMWidth | 0) - (clockUpTo | 0)) | 0;
-            numSamples = ((numSamples | 0) - (clockUpTo | 0)) | 0;
-            if ((this.PWMWidth | 0) == 0) {
-                this.computeNextPWMInterval();
-                this.PWMWidthOld = this.PWMWidthShadow | 0;
-                this.PWMWidth = this.PWMWidthShadow | 0;
-            }
-        }
-    }
-}
-GameBoyAdvanceSound.prototype.preprocessInitialization = function (audioInitialized) {
-    audioInitialized = audioInitialized | 0;
-    if ((audioInitialized | 0) != 0) {
-        this.generateAudio = this.generateAudioReal;
-    }
-    else {
-        this.generateAudio = this.generateAudioFake;
     }
 }
 GameBoyAdvanceSound.prototype.audioJIT = function () {

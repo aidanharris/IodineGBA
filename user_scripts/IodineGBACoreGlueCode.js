@@ -13,7 +13,7 @@ var IodineGUI = {
     "Blitter":null,
     "timerID": null,
     "mixerInput":null,
-    "settings":{
+    "defaults":{
         "sound":true,
         "volume":1,
         "skipBoot":false,
@@ -122,12 +122,7 @@ function registerGUIEvents() {
         }
     });
     addEvent("click", document.getElementById("skip_boot"), function () {
-             if (this.checked) {
-                IodineGUI.Iodine.enableSkipBootROM();
-             }
-             else {
-                IodineGUI.Iodine.disableSkipBootROM();
-             }
+             IodineGUI.Iodine.toggleSkipBootROM(this.checked);
     });
     addEvent("click", document.getElementById("toggleSmoothScaling"), function () {
              if (IodineGUI.Blitter) {
@@ -135,12 +130,7 @@ function registerGUIEvents() {
              }
     });
     addEvent("click", document.getElementById("toggleDynamicSpeed"), function () {
-             if (this.checked) {
-                IodineGUI.Iodine.enableDynamicSpeed();
-             }
-             else {
-                IodineGUI.Iodine.disableDynamicSpeed();
-             }
+             IodineGUI.Iodine.toggleDynamicSpeed(this.checked);
     });
     addEvent("change", document.getElementById("import"), function (e) {
              if (typeof this.files != "undefined") {
@@ -202,8 +192,8 @@ function registerGUIEvents() {
     addEvent("input", document.getElementById("volume"), volChangeFunc);
 }
 function registerGUISettings() {
-    document.getElementById("sound").checked = IodineGUI.settings.sound;
-    if (IodineGUI.settings.sound) {
+    document.getElementById("sound").checked = IodineGUI.defaults.sound;
+    if (IodineGUI.defaults.sound) {
         IodineGUI.Iodine.enableAudio();
     }
     try {
@@ -211,47 +201,29 @@ function registerGUISettings() {
         volControl.min = 0;
         volControl.max = 100;
         volControl.step = 1;
-        volControl.value = IodineGUI.settings.volume * 100;
+        volControl.value = IodineGUI.defaults.volume * 100;
     }
     catch (e) {}
-    IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
-    document.getElementById("skip_boot").checked = IodineGUI.settings.skipBoot;
-    if (IodineGUI.settings.skipBoot) {
-        IodineGUI.Iodine.enableSkipBootROM();
-    }
-    else {
-        IodineGUI.Iodine.disableSkipBootROM();
-    }
-    document.getElementById("toggleSmoothScaling").checked = IodineGUI.settings.toggleSmoothScaling;
-    IodineGUI.Blitter.setSmoothScaling(IodineGUI.settings.toggleSmoothScaling);
-    document.getElementById("toggleDynamicSpeed").checked = IodineGUI.settings.toggleDynamicSpeed;
-    if (IodineGUI.settings.toggleDynamicSpeed) {
-        IodineGUI.Iodine.enableDynamicSpeed();
-    }
-    else {
-        IodineGUI.Iodine.disableDynamicSpeed();
-    }
+    IodineGUI.mixerInput.setVolume(IodineGUI.defaults.volume);
+    document.getElementById("skip_boot").checked = IodineGUI.defaults.skipBoot;
+    IodineGUI.Iodine.toggleSkipBootROM(IodineGUI.defaults.skipBoot);
+    document.getElementById("toggleSmoothScaling").checked = IodineGUI.defaults.toggleSmoothScaling;
+    IodineGUI.Blitter.setSmoothScaling(IodineGUI.defaults.toggleSmoothScaling);
+    document.getElementById("toggleDynamicSpeed").checked = IodineGUI.defaults.toggleDynamicSpeed;
+    IodineGUI.Iodine.toggleDynamicSpeed(IodineGUI.defaults.toggleDynamicSpeed);
 }
 function resetPlayButton() {
     document.getElementById("pause").style.display = "none";
     document.getElementById("play").style.display = "inline";
 }
 function stepVolume(delta) {
-    var volume = IodineGUI.settings.volume;
+    var volume = document.getElementById("volume").value / 100;
     volume = Math.min(Math.max(volume + delta, 0), 1);
-    IodineGUI.settings.volume = volume;
-    IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
-    try {
-        document.getElementById("volume").value = Math.round(volume * 100);
-    }
-    catch (e) {}
+    IodineGUI.mixerInput.setVolume(volume);
+    document.getElementById("volume").value = Math.round(volume * 100);
 }
 function volChangeFunc() {
-    try {
-        IodineGUI.settings.volume = Math.min(Math.max(parseInt(this.value), 0), 100) * 0.01;
-    }
-    catch (e) {}
-    IodineGUI.mixerInput.setVolume(IodineGUI.settings.volume);
+    IodineGUI.mixerInput.setVolume(Math.min(Math.max(parseInt(this.value), 0), 100) * 0.01);
 };
 function writeRedTemporaryText(textString) {
     if (IodineGUI.timerID) {

@@ -8,7 +8,7 @@
  
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-function GameBoyAdvanceIO(settings, coreExposed, BIOS, ROM) {
+function GameBoyAdvanceIO(SKIPBoot, coreExposed, BIOS, ROM) {
     //State Machine Tracking:
     this.systemStatus = 0;
     this.cyclesToIterate = 0;
@@ -18,9 +18,10 @@ function GameBoyAdvanceIO(settings, coreExposed, BIOS, ROM) {
     this.timerClocks = 0;
     this.serialClocks = 0;
     this.nextEventClocks = 0;
-    this.BIOSFound = false;
+    //this.BIOSFound = false;
+    //Do we skip the BIOS Boot Intro?
+    this.SKIPBoot = !!SKIPBoot;
     //References passed to us:
-    this.settings = settings;
     this.coreExposed = coreExposed;
     this.BIOS = BIOS;
     this.ROM = ROM;

@@ -58,7 +58,7 @@ GameBoyAdvanceCPU.prototype.initializeRegisters = function () {
     this.SPSR[4] = 0xD3; //Undefined
     this.triggeredIRQ = 0;        //Pending IRQ found.
     //Pre-initialize stack pointers if no BIOS loaded:
-    if (!this.IOCore.BIOSFound || this.IOCore.settings.SKIPBoot) {
+    if (this.IOCore.SKIPBoot) {
         this.HLEReset();
     }
     //Start in fully bubbled pipeline mode:
