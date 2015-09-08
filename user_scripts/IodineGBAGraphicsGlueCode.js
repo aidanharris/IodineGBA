@@ -32,7 +32,7 @@ GlueCodeGfx.prototype.recomputeDimension = function () {
     //Cache some dimension info:
     this.canvasLastWidth = this.canvas.clientWidth;
     this.canvasLastHeight = this.canvas.clientHeight;
-    if (window.mozRequestAnimationFrame) {    //Sniff out firefox for selecting this path.
+    if (window.mozRequestAnimationFrame || navigator.userAgent.toLowerCase().indexOf("gecko") != -1) {    //Sniff out firefox for selecting this path.
         //Set target as unscaled:
         this.onscreenWidth = this.canvas.width = this.offscreenWidth;
         this.onscreenHeight = this.canvas.height = this.offscreenHeight;
