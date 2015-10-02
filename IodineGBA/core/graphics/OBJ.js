@@ -38,10 +38,9 @@ if (__VIEWS_SUPPORTED__) {
             this.OAMRAM = getUint8Array(0x400);
             this.OAMRAM16 = getUint16View(this.OAMRAM);
             this.OAMRAM32 = getInt32View(this.OAMRAM);
-            this.offset = 0x500;
-            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, this.offset | 0, ((this.offset | 0) + 240) | 0);
+            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, 0x500, 0x5F0);
             this.scratchWindowBuffer = getInt32Array(240);
-            this.scratchOBJBuffer = getInt32Array(128);
+            this.scratchOBJBuffer = getInt32ViewCustom(this.gfx.buffer, 0x600, 0x680);
             this.OBJMatrixParameters = getInt32Array(0x80);
             this.initializeOAMTable();
         }
@@ -60,10 +59,9 @@ if (__VIEWS_SUPPORTED__) {
             this.OAMRAM = getUint8Array(0x400);
             this.OAMRAM16 = getUint16View(this.OAMRAM);
             this.OAMRAM32 = getInt32View(this.OAMRAM);
-            this.offset = 0x500;
-            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, this.offset | 0, ((this.offset | 0) + 240) | 0);
+            this.scratchBuffer = getInt32ViewCustom(this.gfx.buffer, 0x500, 0x5F0);
             this.scratchWindowBuffer = getInt32Array(240);
-            this.scratchOBJBuffer = getInt32Array(128);
+            this.scratchOBJBuffer = getInt32ViewCustom(this.gfx.buffer, 0x600, 0x680);
             this.clearingBuffer = getInt32Array(240);
             this.initializeClearingBuffer();
             this.OBJMatrixParameters = getInt32Array(0x80);
@@ -104,6 +102,25 @@ if (__VIEWS_SUPPORTED__) {
             }
         }
     }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteNormalOBJWIN = function (xcoord, xcoordEnd) {
+        xcoord = xcoord | 0;
+        xcoordEnd = xcoordEnd | 0;
+        for (var xSource = 0; (xcoord | 0) < (xcoordEnd | 0); xcoord = ((xcoord | 0) + 1) | 0, xSource = ((xSource | 0) + 1) | 0) {
+            if ((xcoord | 0) > -1 && (this.scratchOBJBuffer[xSource | 0] | 0) != 0) {
+                this.scratchWindowBuffer[xcoord | 0] = 0;
+            }
+        }
+    }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteFlippedOBJWIN = function (xcoord, xcoordEnd, xSize) {
+        xcoord = xcoord | 0;
+        xcoordEnd = xcoordEnd | 0;
+        xSize = xSize | 0;
+        for (var xSource = ((xSize | 0) - 1) | 0; (xcoord | 0) < (xcoordEnd | 0); xcoord = ((xcoord | 0) + 1) | 0, xSource = ((xSource | 0) - 1) | 0) {
+            if ((xcoord | 0) > -1 && (this.scratchOBJBuffer[xSource | 0] | 0) != 0) {
+                this.scratchWindowBuffer[xcoord | 0] = 0;
+            }
+        }
+    }
 }
 else {
     GameBoyAdvanceOBJRenderer.prototype.initialize = function () {
@@ -116,6 +133,7 @@ else {
         this.scratchBuffer = this.gfx.buffer;
         this.scratchWindowBuffer = getInt32Array(240);
         this.scratchOBJBuffer = getInt32Array(128);
+        this.gfx.mosaicRenderer.attachOBJBuffer(this.scratchOBJBuffer);
         this.OBJMatrixParameters = getInt32Array(0x80);
         this.initializeOAMTable();
     }
@@ -140,6 +158,20 @@ else {
             //Overwrite by priority:
             if (xcoord > -1 && (pixel & 0x3800000) < (this.scratchBuffer[xcoord | this.offset] & 0x3800000)) {
                 this.scratchBuffer[xcoord | this.offset] = pixel;
+            }
+        }
+    }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteNormalOBJWIN = function (xcoord, xcoordEnd) {
+        for (var xSource = 0; xcoord < xcoordEnd; ++xcoord, ++xSource) {
+            if (xcoord > -1 && this.scratchOBJBuffer[xSource] != 0) {
+                this.scratchWindowBuffer[xcoord] = 0;
+            }
+        }
+    }
+    GameBoyAdvanceOBJRenderer.prototype.outputSpriteFlippedOBJWIN = function (xcoord, xcoordEnd, xSize) {
+        for (var xSource = xSize - 1; xcoord < xcoordEnd; ++xcoord, --xSource) {
+            if (xcoord > -1 && this.scratchOBJBuffer[xSource] != 0) {
+                this.scratchWindowBuffer[xcoord] = 0;
             }
         }
     }
@@ -744,7 +776,7 @@ GameBoyAdvanceOBJRenderer.prototype.outputSpriteToScratch = function (sprite, xS
     }
     //Perform the mosaic transform:
     if ((sprite.mosaic | 0) != 0) {
-        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(this.scratchOBJBuffer, xcoord | 0, xSize | 0);
+        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(xcoord | 0, xSize | 0);
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
@@ -768,7 +800,7 @@ GameBoyAdvanceOBJRenderer.prototype.outputSemiTransparentSpriteToScratch = funct
     }
     //Perform the mosaic transform:
     if ((sprite.mosaic | 0) != 0) {
-        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(this.scratchOBJBuffer, xcoord | 0, xSize | 0);
+        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(xcoord | 0, xSize | 0);
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
@@ -792,14 +824,17 @@ GameBoyAdvanceOBJRenderer.prototype.outputSpriteToOBJWINScratch = function (spri
     }
     //Perform the mosaic transform:
     if ((sprite.mosaic | 0) != 0) {
-        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(this.scratchOBJBuffer, xcoord | 0, xSize | 0);
+        this.gfx.mosaicRenderer.renderOBJMosaicHorizontal(xcoord | 0, xSize | 0);
     }
     //Resolve end point:
     var xcoordEnd = Math.min(((xcoord | 0) + (xSize | 0)) | 0, 240) | 0;
-    for (var xSource = 0; (xcoord | 0) < (xcoordEnd | 0); xcoord = ((xcoord | 0) + 1) | 0, xSource = ((xSource | 0) + 1) | 0) {
-        if ((xcoord | 0) > -1 && (this.scratchOBJBuffer[xSource | 0] | 0) != 0) {
-            this.scratchWindowBuffer[xcoord | 0] = 0;
-        }
+    if ((sprite.horizontalFlip | 0) == 0 || (sprite.matrix2D | 0) != 0) {
+        //Normal:
+        this.outputSpriteNormalOBJWIN(xcoord | 0, xcoordEnd | 0);
+    }
+    else {
+        //Flipped Horizontally:
+        this.outputSpriteFlippedOBJWIN(xcoord | 0, xcoordEnd | 0, xSize | 0);
     }
 }
 GameBoyAdvanceOBJRenderer.prototype.isDrawable = function (sprite) {

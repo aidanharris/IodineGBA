@@ -1,6 +1,6 @@
 "use strict";
 /*
- Copyright (C) 2012-2014 Grant Galitz
+ Copyright (C) 2012-2015 Grant Galitz
  
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  
@@ -22,6 +22,14 @@ function getUint8Array(size_t) {
     }
     catch (error) {
         return getArray(size_t);
+    }
+}
+function getUint8View(typed_array) {
+    try {
+        return new Uint8Array(typed_array.buffer);
+    }
+    catch (error) {
+        return null;
     }
 }
 function getInt16Array(size_t) {
@@ -66,6 +74,22 @@ function getInt32View(typed_array) {
 }
 function getInt32ViewCustom(typed_array, start, end) {
     try {
+        typed_array = getInt32View(typed_array);
+        return typed_array.subarray(start, end);
+    }
+    catch (error) {
+        try {
+            //Nightly Firefox 4 used to have the subarray function named as slice:
+            return typed_array.slice(start, end);
+        }
+        catch (error) {
+            return null;
+        }
+    }
+}
+function getUint8ViewCustom(typed_array, start, end) {
+    try {
+        typed_array = getUint8View(typed_array);
         return typed_array.subarray(start, end);
     }
     catch (error) {

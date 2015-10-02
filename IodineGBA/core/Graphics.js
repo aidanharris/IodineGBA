@@ -28,7 +28,7 @@ GameBoyAdvanceGraphics.prototype.initializeState = function () {
     this.VCounter = 0;
     this.currentScanLine = 0;
     this.LCDTicks = 0;
-    if (!this.IOCore.BIOSFound || this.IOCore.settings.SKIPBoot) {
+    if (this.IOCore.SKIPBoot) {
         //BIOS entered the ROM at line 0x7C:
         this.currentScanLine = 0x7C;
     }

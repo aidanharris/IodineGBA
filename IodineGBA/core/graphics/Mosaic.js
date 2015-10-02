@@ -15,6 +15,10 @@ function GameBoyAdvanceMosaicRenderer(buffer) {
     this.OBJMosaicVSize = 0;
     this.buffer = buffer;
 }
+GameBoyAdvanceMosaicRenderer.prototype.attachOBJBuffer = function (objBuffer) {
+    //Function only called if no typed array view support:
+    this.objBuffer = objBuffer;
+}
 GameBoyAdvanceMosaicRenderer.prototype.renderMosaicHorizontal = function (offset) {
     offset = offset | 0;
     var currentPixel = 0;
@@ -30,17 +34,35 @@ GameBoyAdvanceMosaicRenderer.prototype.renderMosaicHorizontal = function (offset
         }
     }
 }
-GameBoyAdvanceMosaicRenderer.prototype.renderOBJMosaicHorizontal = function (layer, xOffset, xSize) {
-    xOffset = xOffset | 0;
-    xSize = xSize | 0;
-    var currentPixel = 0x3800000;
-    var mosaicBlur = ((this.OBJMosaicHSize | 0) + 1) | 0;
-    if ((mosaicBlur | 0) > 1) {    //Don't perform a useless loop.
-        for (var position = ((xOffset | 0) % (mosaicBlur | 0)) | 0; (position | 0) < (xSize | 0); position = ((position | 0) + 1) | 0) {
-            if ((((position | 0) % (mosaicBlur | 0)) | 0) == 0) {
-                currentPixel = layer[position | 0] | 0;
+if (__VIEWS_SUPPORTED__) {
+    GameBoyAdvanceMosaicRenderer.prototype.renderOBJMosaicHorizontal = function (xOffset, xSize) {
+        xOffset = xOffset | 0;
+        xSize = xSize | 0;
+        var currentPixel = 0x3800000;
+        var mosaicBlur = ((this.OBJMosaicHSize | 0) + 1) | 0;
+        if ((mosaicBlur | 0) > 1) {    //Don't perform a useless loop.
+            for (var position = ((xOffset | 0) % (mosaicBlur | 0)) | 0; (position | 0) < (xSize | 0); position = ((position | 0) + 1) | 0) {
+                if ((((position | 0) % (mosaicBlur | 0)) | 0) == 0) {
+                    currentPixel = this.buffer[position | 0x600] | 0;
+                }
+                this.buffer[position | 0x600] = currentPixel | 0;
             }
-            layer[position | 0] = currentPixel | 0;
+        }
+    }
+}
+else {
+    GameBoyAdvanceMosaicRenderer.prototype.renderOBJMosaicHorizontal = function (xOffset, xSize) {
+        xOffset = xOffset | 0;
+        xSize = xSize | 0;
+        var currentPixel = 0x3800000;
+        var mosaicBlur = ((this.OBJMosaicHSize | 0) + 1) | 0;
+        if ((mosaicBlur | 0) > 1) {    //Don't perform a useless loop.
+            for (var position = ((xOffset | 0) % (mosaicBlur | 0)) | 0; (position | 0) < (xSize | 0); position = ((position | 0) + 1) | 0) {
+                if ((((position | 0) % (mosaicBlur | 0)) | 0) == 0) {
+                    currentPixel = this.objBuffer[position | 0] | 0;
+                }
+                this.objBuffer[position | 0] = currentPixel | 0;
+            }
         }
     }
 }

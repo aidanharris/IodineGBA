@@ -8,28 +8,16 @@
  
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-function GameBoyAdvanceBGMatrixRenderer(gfx, BGLayer) {
-    BGLayer = BGLayer | 0;
+function GameBoyAdvanceBGMatrixRenderer(gfx) {
     this.gfx = gfx;
-    this.BGLayer = BGLayer | 0;
 }
 GameBoyAdvanceBGMatrixRenderer.prototype.initialize = function () {
     this.VRAM = this.gfx.VRAM;
     this.palette = this.gfx.palette256;
-    if ((this.BGLayer & 0x1) == 0) {
-        this.bgAffineRenderer = this.gfx.bgAffineRenderer0;
-    }
-    else {
-        this.bgAffineRenderer = this.gfx.bgAffineRenderer1;
-    }
-    this.screenSizePreprocess();
-    this.screenBaseBlockPreprocess();
-    this.characterBaseBlockPreprocess();
+    this.screenSizePreprocess(0);
+    this.screenBaseBlockPreprocess(0);
+    this.characterBaseBlockPreprocess(0);
     this.displayOverflowProcess(0);
-}
-GameBoyAdvanceBGMatrixRenderer.prototype.renderScanLine = function (line) {
-    line = line | 0;
-    this.bgAffineRenderer.renderScanLine(line | 0, this);
 }
 if (typeof Math.imul == "function") {
     //Math.imul found, insert the optimized path in:
@@ -80,14 +68,17 @@ GameBoyAdvanceBGMatrixRenderer.prototype.fetchPixelNoOverflow = function (x, y) 
     var address = this.computeScreenAddress(x | 0, y | 0) | 0;
     return this.palette[this.VRAM[address & 0xFFFF] & 0xFF] | 0;
 }
-GameBoyAdvanceBGMatrixRenderer.prototype.screenBaseBlockPreprocess = function () {
-    this.BGScreenBaseBlock = this.gfx.BGScreenBaseBlock[this.BGLayer & 3] << 11;
+GameBoyAdvanceBGMatrixRenderer.prototype.screenBaseBlockPreprocess = function (BGScreenBaseBlock) {
+    BGScreenBaseBlock = BGScreenBaseBlock | 0;
+    this.BGScreenBaseBlock = BGScreenBaseBlock << 11;
 }
-GameBoyAdvanceBGMatrixRenderer.prototype.characterBaseBlockPreprocess = function () {
-    this.BGCharacterBaseBlock = this.gfx.BGCharacterBaseBlock[this.BGLayer & 3] << 14;
+GameBoyAdvanceBGMatrixRenderer.prototype.characterBaseBlockPreprocess = function (BGCharacterBaseBlock) {
+    BGCharacterBaseBlock = BGCharacterBaseBlock | 0;
+    this.BGCharacterBaseBlock = BGCharacterBaseBlock << 14;
 }
-GameBoyAdvanceBGMatrixRenderer.prototype.screenSizePreprocess = function () {
-    this.mapSize = 0x10 << (this.gfx.BGScreenSize[this.BGLayer & 3] | 0);
+GameBoyAdvanceBGMatrixRenderer.prototype.screenSizePreprocess = function (BGScreenSize) {
+    BGScreenSize = BGScreenSize | 0;
+    this.mapSize = 0x10 << (BGScreenSize | 0);
     this.mapSizeComparer = ((this.mapSize << 3) - 1) | 0;
 }
 GameBoyAdvanceBGMatrixRenderer.prototype.displayOverflowPreprocess = function (doOverflow) {

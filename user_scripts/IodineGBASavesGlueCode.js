@@ -1,6 +1,6 @@
 "use strict";
 /*
- Copyright (C) 2012-2013 Grant Galitz
+ Copyright (C) 2012-2015 Grant Galitz
  
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  
@@ -22,7 +22,7 @@ function ImportSaveCallback(name) {
     return null;
 }
 function ExportSave() {
-    Iodine.exportSave();
+    IodineGUI.Iodine.exportSave();
 }
 function ExportSaveCallback(name, save) {
     if (name != "") {
@@ -35,8 +35,8 @@ function ExportSaveCallback(name, save) {
     }
 }
 function registerSaveHandlers() {
-    Iodine.attachSaveExportHandler(ExportSaveCallback);
-    Iodine.attachSaveImportHandler(ImportSaveCallback);
+    IodineGUI.Iodine.attachSaveExportHandler(ExportSaveCallback);
+    IodineGUI.Iodine.attachSaveImportHandler(ImportSaveCallback);
 }
 function import_save(blobData) {
     blobData = decodeBlob(blobData);

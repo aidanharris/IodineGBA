@@ -16,7 +16,6 @@ GameBoyAdvanceBG2FrameBufferRenderer.prototype.initialize = function () {
     this.VRAM = this.gfx.VRAM;
     this.VRAM16 = this.gfx.VRAM16;
     this.fetchPixel = this.fetchMode3Pixel;
-    this.bgAffineRenderer = this.gfx.bgAffineRenderer0;
     this.frameSelect = 0;
 }
 GameBoyAdvanceBG2FrameBufferRenderer.prototype.selectMode = function (mode) {
@@ -31,10 +30,6 @@ GameBoyAdvanceBG2FrameBufferRenderer.prototype.selectMode = function (mode) {
         case 5:
             this.fetchPixel = this.fetchMode5Pixel;
     }
-}
-GameBoyAdvanceBG2FrameBufferRenderer.prototype.renderScanLine = function (line) {
-    line = line | 0;
-    this.bgAffineRenderer.renderScanLine(line | 0, this);
 }
 if (__LITTLE_ENDIAN__) {
     if (typeof Math.imul == "function") {

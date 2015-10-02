@@ -1,6 +1,6 @@
 "use strict";
 /*
- Copyright (C) 2012-2013 Grant Galitz
+ Copyright (C) 2012-2015 Grant Galitz
  
  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
  
@@ -11,19 +11,19 @@
 function attachBIOS(BIOS) {
     resetPlayButton();
     try {
-        Iodine.attachBIOS(new Uint8Array(BIOS));
+        IodineGUI.Iodine.attachBIOS(new Uint8Array(BIOS));
     }
     catch (error) {
-        Iodine.attachBIOS(BIOS);
+        IodineGUI.Iodine.attachBIOS(BIOS);
     }
 }
 function attachROM(ROM) {
     resetPlayButton();
     try {
-        Iodine.attachROM(new Uint8Array(ROM));
+        IodineGUI.Iodine.attachROM(new Uint8Array(ROM));
     }
     catch (error) {
-        Iodine.attachROM(ROM);
+        IodineGUI.Iodine.attachROM(ROM);
     }
 }
 function fileLoadShimCode(files, ROMHandler) {

@@ -8,33 +8,83 @@
  
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-var Iodine = null;
-var Blitter = null;
-var Mixer = null;
-var MixerInput = null;
-var timerID = null;
+var IodineGUI = {
+    "Iodine":null,
+    "Blitter":null,
+    "timerID": null,
+    "mixerInput":null,
+    "defaults":{
+        "sound":true,
+        "volume":1,
+        "skipBoot":false,
+        "toggleSmoothScaling":true,
+        "toggleDynamicSpeed":false,
+        "keyZones":[
+            //Use this to control the key mapping:
+            //A:
+            [88, 74],
+            //B:
+            [90, 81, 89],
+            //Select:
+            [16],
+            //Start:
+            [13],
+            //Right:
+            [39],
+            //Left:
+            [37],
+            //Up:
+            [38],
+            //Down:
+            [40],
+            //R:
+            [50],
+            //L:
+            [49]
+        ]
+    }
+};
 window.onload = function () {
     //Initialize Iodine:
-    Iodine = new GameBoyAdvanceEmulator();
+    IodineGUI.Iodine = new GameBoyAdvanceEmulator();
+    //Initialize the timer:
+    registerTimerHandler();
     //Initialize the graphics:
     registerBlitterHandler();
     //Initialize the audio:
     registerAudioHandler();
     //Register the save handler callbacks:
     registerSaveHandlers();
-    //Hook the GUI controls.
+    //Register the GUI controls.
     registerGUIEvents();
+    //Register GUI settings.
+    registerGUISettings();
+}
+function registerTimerHandler() {
+    var rate = 4;
+    IodineGUI.Iodine.setIntervalRate(rate | 0);
+    setInterval(function () {
+        //Check to see if web view is not hidden, if hidden don't run due to JS timers being inaccurate on page hide:
+        if (!document.hidden && !document.msHidden && !document.mozHidden && !document.webkitHidden) {
+            if (document.getElementById("play").style.display == "none") {
+                IodineGUI.Iodine.play();
+            }
+            IodineGUI.Iodine.timerCallback(+(new Date()).getTime());
+        }
+        else {
+            IodineGUI.Iodine.pause();
+        }
+    }, rate | 0);
 }
 function registerBlitterHandler() {
-    Blitter = new GlueCodeGfx();
-    Blitter.attachCanvas(document.getElementById("emulator_target"));
-    Iodine.attachGraphicsFrameHandler(function (buffer) {Blitter.copyBuffer(buffer);});
+    IodineGUI.Blitter = new GlueCodeGfx();
+    IodineGUI.Blitter.attachCanvas(document.getElementById("emulator_target"));
+    IodineGUI.Iodine.attachGraphicsFrameHandler(function (buffer) {IodineGUI.Blitter.copyBuffer(buffer);});
 }
 function registerAudioHandler() {
-    Mixer = new GlueCodeMixer();
-    MixerInput = new GlueCodeMixerInput(Mixer);
-    Iodine.attachAudioHandler(MixerInput);
-    Iodine.enableAudio();
+    var Mixer = new GlueCodeMixer();
+    IodineGUI.mixerInput = new GlueCodeMixerInput(Mixer);
+    IodineGUI.Iodine.attachAudioHandler(IodineGUI.mixerInput);
 }
 function registerGUIEvents() {
     addEvent("keydown", document, keyDown);
@@ -42,7 +92,7 @@ function registerGUIEvents() {
     addEvent("change", document.getElementById("rom_load"), fileLoadROM);
     addEvent("change", document.getElementById("bios_load"), fileLoadBIOS);
     addEvent("click", document.getElementById("play"), function (e) {
-        Iodine.play();
+        IodineGUI.Iodine.play();
         this.style.display = "none";
         document.getElementById("pause").style.display = "inline";
         if (e.preventDefault) {
@@ -50,7 +100,7 @@ function registerGUIEvents() {
         }
     });
     addEvent("click", document.getElementById("pause"), function (e) {
-        Iodine.pause();
+        IodineGUI.Iodine.pause();
         this.style.display = "none";
         document.getElementById("play").style.display = "inline";
         if (e.preventDefault) {
@@ -58,43 +108,29 @@ function registerGUIEvents() {
         }
     });
     addEvent("click", document.getElementById("restart"), function (e) {
-        Iodine.restart();
+        IodineGUI.Iodine.restart();
         if (e.preventDefault) {
              e.preventDefault();
         }
     });
-    document.getElementById("sound").checked = true;
     addEvent("click", document.getElementById("sound"), function () {
         if (this.checked) {
-            Iodine.enableAudio();
+            IodineGUI.Iodine.enableAudio();
         }
         else {
-            Iodine.disableAudio();
+            IodineGUI.Iodine.disableAudio();
         }
     });
-    document.getElementById("skip_boot").checked = false;
     addEvent("click", document.getElementById("skip_boot"), function () {
-             if (this.checked) {
-                Iodine.enableSkipBootROM();
-             }
-             else {
-                Iodine.disableSkipBootROM();
-             }
+             IodineGUI.Iodine.toggleSkipBootROM(this.checked);
     });
-    document.getElementById("toggleSmoothScaling").checked = true;
     addEvent("click", document.getElementById("toggleSmoothScaling"), function () {
-             if (Blitter) {
-                Blitter.setSmoothScaling(this.checked);
+             if (IodineGUI.Blitter) {
+                IodineGUI.Blitter.setSmoothScaling(this.checked);
              }
     });
-    document.getElementById("toggleDynamicSpeed").checked = true;
     addEvent("click", document.getElementById("toggleDynamicSpeed"), function () {
-             if (this.checked) {
-                Iodine.enableDynamicSpeed();
-             }
-             else {
-                Iodine.disableDynamicSpeed();
-             }
+             IodineGUI.Iodine.toggleDynamicSpeed(this.checked);
     });
     addEvent("change", document.getElementById("import"), function (e) {
              if (typeof this.files != "undefined") {
@@ -148,29 +184,54 @@ function registerGUIEvents() {
     });
     addEvent("click", document.getElementById("export"), refreshStorageListing);
     addEvent("unload", window, ExportSave);
-    Iodine.attachSpeedHandler(function (speed) {
+    IodineGUI.Iodine.attachSpeedHandler(function (speed) {
         var speedDOM = document.getElementById("speed");
-        speedDOM.textContent = "Speed: " + speed;
+        speedDOM.textContent = "Speed: " + speed.toFixed(2) + "%";
     });
-    //setInterval(ExportSave, 60000); //Do periodic saves.
+    addEvent("change", document.getElementById("volume"), volChangeFunc);
+    addEvent("input", document.getElementById("volume"), volChangeFunc);
+}
+function registerGUISettings() {
+    document.getElementById("sound").checked = IodineGUI.defaults.sound;
+    if (IodineGUI.defaults.sound) {
+        IodineGUI.Iodine.enableAudio();
+    }
+    try {
+        var volControl = document.getElementById("volume");
+        volControl.min = 0;
+        volControl.max = 100;
+        volControl.step = 1;
+        volControl.value = IodineGUI.defaults.volume * 100;
+    }
+    catch (e) {}
+    IodineGUI.mixerInput.setVolume(IodineGUI.defaults.volume);
+    document.getElementById("skip_boot").checked = IodineGUI.defaults.skipBoot;
+    IodineGUI.Iodine.toggleSkipBootROM(IodineGUI.defaults.skipBoot);
+    document.getElementById("toggleSmoothScaling").checked = IodineGUI.defaults.toggleSmoothScaling;
+    IodineGUI.Blitter.setSmoothScaling(IodineGUI.defaults.toggleSmoothScaling);
+    document.getElementById("toggleDynamicSpeed").checked = IodineGUI.defaults.toggleDynamicSpeed;
+    IodineGUI.Iodine.toggleDynamicSpeed(IodineGUI.defaults.toggleDynamicSpeed);
 }
 function resetPlayButton() {
     document.getElementById("pause").style.display = "none";
     document.getElementById("play").style.display = "inline";
 }
-function lowerVolume() {
-    Iodine.incrementVolume(-0.04);
+function stepVolume(delta) {
+    var volume = document.getElementById("volume").value / 100;
+    volume = Math.min(Math.max(volume + delta, 0), 1);
+    IodineGUI.mixerInput.setVolume(volume);
+    document.getElementById("volume").value = Math.round(volume * 100);
 }
-function raiseVolume() {
-    Iodine.incrementVolume(0.04);
-}
+function volChangeFunc() {
+    IodineGUI.mixerInput.setVolume(Math.min(Math.max(parseInt(this.value), 0), 100) * 0.01);
+};
 function writeRedTemporaryText(textString) {
-    if (timerID) {
-        clearTimeout(timerID);
+    if (IodineGUI.timerID) {
+        clearTimeout(IodineGUI.timerID);
     }
     document.getElementById("tempMessage").style.display = "block";
     document.getElementById("tempMessage").textContent = textString;
-    timerID = setTimeout(clearTempString, 5000);
+    IodineGUI.timerID = setTimeout(clearTempString, 5000);
 }
 function clearTempString() {
     document.getElementById("tempMessage").style.display = "none";

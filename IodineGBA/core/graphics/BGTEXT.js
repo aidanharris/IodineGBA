@@ -26,10 +26,11 @@ if (__VIEWS_SUPPORTED__) {
         this.BGXCoord = 0;
         this.BGYCoord = 0;
         this.do256 = 0;
-        this.screenSizePreprocess();
-        this.priorityPreprocess();
-        this.screenBaseBlockPreprocess();
-        this.characterBaseBlockPreprocess();
+        this.doMosaic = 0;
+        this.screenSizePreprocess(0);
+        this.priorityPreprocess(0);
+        this.screenBaseBlockPreprocess(0);
+        this.characterBaseBlockPreprocess(0);
     }
     GameBoyAdvanceBGTEXTRenderer.prototype.renderWholeTiles8BIT = function (xTileStart, yTileStart, yTileOffset) {
         xTileStart = xTileStart | 0;
@@ -112,10 +113,11 @@ else {
         this.BGXCoord = 0;
         this.BGYCoord = 0;
         this.do256 = 0;
-        this.screenSizePreprocess();
-        this.priorityPreprocess();
-        this.screenBaseBlockPreprocess();
-        this.characterBaseBlockPreprocess();
+        this.doMosaic = 0;
+        this.screenSizePreprocess(0);
+        this.priorityPreprocess(0);
+        this.screenBaseBlockPreprocess(0);
+        this.characterBaseBlockPreprocess(0);
     }
     GameBoyAdvanceBGTEXTRenderer.prototype.renderWholeTiles8BIT = function (xTileStart, yTileStart, yTileOffset) {
         //Process full 8 pixels at a time:
@@ -177,7 +179,7 @@ else {
 }
 GameBoyAdvanceBGTEXTRenderer.prototype.renderScanLine = function (line) {
     line = line | 0;
-    if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+    if ((this.doMosaic | 0) != 0) {
         //Correct line number for mosaic:
         line = ((line | 0) - (this.gfx.mosaicRenderer.getMosaicYOffset(line | 0) | 0)) | 0;
     }
@@ -193,7 +195,7 @@ GameBoyAdvanceBGTEXTRenderer.prototype.renderScanLine = function (line) {
         //4-bit palette mode:
         this.render4BITLine(yTileStart | 0, xTileStart | 0, yTileOffset | 0);
     }
-    if ((this.gfx.BGMosaic[this.BGLayer & 3] | 0) != 0) {
+    if ((this.doMosaic | 0) != 0) {
         //Pixelize the line horizontally:
         this.gfx.mosaicRenderer.renderMosaicHorizontal(this.offset | 0);
     }
@@ -499,21 +501,50 @@ GameBoyAdvanceBGTEXTRenderer.prototype.addressInvalidRender = function () {
     this.tileFetched[6] = data | 0;
     this.tileFetched[7] = data | 0;
 }
+GameBoyAdvanceBGTEXTRenderer.prototype.setMosaicEnable = function (doMosaic) {
+    doMosaic = doMosaic | 0;
+    this.doMosaic = doMosaic | 0;
+}
 GameBoyAdvanceBGTEXTRenderer.prototype.paletteModeSelect = function (do256) {
     do256 = do256 | 0;
     this.do256 = do256 | 0;
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.screenSizePreprocess = function () {
-    this.tileMode = this.gfx.BGScreenSize[this.BGLayer & 0x3] | 0;
+GameBoyAdvanceBGTEXTRenderer.prototype.screenSizePreprocess = function (BGScreenSize) {
+    BGScreenSize = BGScreenSize | 0;
+    this.tileMode = BGScreenSize | 0;
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.priorityPreprocess = function () {
-    this.priorityFlag = (this.gfx.BGPriority[this.BGLayer & 3] << 23) | (1 << (this.BGLayer | 0x10));
+GameBoyAdvanceBGTEXTRenderer.prototype.priorityPreprocess = function (BGPriority) {
+    BGPriority = BGPriority | 0;
+    this.priorityFlag = (BGPriority << 23) | (1 << (this.BGLayer | 0x10));
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.screenBaseBlockPreprocess = function () {
-    this.BGScreenBaseBlock = this.gfx.BGScreenBaseBlock[this.BGLayer & 3] << 10;
+GameBoyAdvanceBGTEXTRenderer.prototype.screenBaseBlockPreprocess = function (BGScreenBaseBlock) {
+    BGScreenBaseBlock = BGScreenBaseBlock | 0;
+    this.BGScreenBaseBlock = BGScreenBaseBlock << 10;
 }
-GameBoyAdvanceBGTEXTRenderer.prototype.characterBaseBlockPreprocess = function () {
-    this.BGCharacterBaseBlock = this.gfx.BGCharacterBaseBlock[this.BGLayer & 3] << 12;
+GameBoyAdvanceBGTEXTRenderer.prototype.characterBaseBlockPreprocess = function (BGCharacterBaseBlock) {
+    BGCharacterBaseBlock = BGCharacterBaseBlock | 0;
+    this.BGCharacterBaseBlock = BGCharacterBaseBlock << 12;
+}
+GameBoyAdvanceBGTEXTRenderer.prototype.writeBGCNT8_0 = function (data) {
+    data = data | 0;
+    this.setMosaicEnable(data & 0x40);
+    this.paletteModeSelect(data & 0x80);
+    this.priorityPreprocess(data & 0x3);
+    this.characterBaseBlockPreprocess((data & 0xC) >> 2);
+}
+GameBoyAdvanceBGTEXTRenderer.prototype.writeBGCNT8_1 = function (data) {
+    data = data | 0;
+    this.screenSizePreprocess((data & 0xC0) >> 6);
+    this.screenBaseBlockPreprocess(data & 0x1F);
+}
+GameBoyAdvanceBGTEXTRenderer.prototype.writeBGCNT16 = function (data) {
+    data = data | 0;
+    this.setMosaicEnable(data & 0x40);
+    this.paletteModeSelect(data & 0x80);
+    this.priorityPreprocess(data & 0x3);
+    this.characterBaseBlockPreprocess((data & 0xC) >> 2);
+    this.screenSizePreprocess((data & 0xC000) >> 14);
+    this.screenBaseBlockPreprocess((data >> 8) & 0x1F);
 }
 GameBoyAdvanceBGTEXTRenderer.prototype.writeBGHOFS8_0 = function (data) {
     data = data | 0;
