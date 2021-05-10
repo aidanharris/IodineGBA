@@ -19,40 +19,40 @@ Screenshots
 
 * **Pokemon Ruby:**
 
-    ![Pokemon Ruby](http://i.imgur.com/OO9XCRk.png "Pokemon Ruby")
+    ![Pokemon Ruby](https://i.imgur.com/OO9XCRk.png)
    
 * **Super Mario Advance:**
     
-    ![Super Mario Advance](http://i.imgur.com/ewhtAJg.png "Super Mario Advance")
+    ![Super Mario Advance](https://i.imgur.com/ewhtAJg.png)
 
 * **Mario & Luigi Superstar Saga:**
     
-    ![Mario & Luigi Superstar Saga](http://i.imgur.com/Do8TbsMh.png "Mario & Luigi Superstar Saga")
+    ![Mario & Luigi Superstar Saga](https://i.imgur.com/Do8TbsMh.png)
     
 * **Mario Kart Advance:**
     
-    ![Mario Kart Advance](http://i.imgur.com/37xx3yPh.png “Super Circuit”)
+    ![Mario Kart Advance](https://i.imgur.com/37xx3yPh.png)
     
 * **Earthworm Jim:**
     
-    ![Earthworm Jim](http://i.imgur.com/Ip3MHzmh.png “Earthworm Jim”)
+    ![Earthworm Jim](https://i.imgur.com/Ip3MHzmh.png)
     
 * **Advance Wars:**
     
-    ![Advance Wars](http://i.imgur.com/akKzA97h.png “Advance Wars”)
+    ![Advance Wars](https://i.imgur.com/akKzA97h.png)
     
 * **Wario Land 4:**
     
-    ![Wario Land 4](http://i.imgur.com/eaDqCxuh.png “Wario Land 4”)
+    ![Wario Land 4](https://i.imgur.com/eaDqCxuh.png)
     
 * **Golden Sun:**
     
-    ![Golden Sun](http://i.imgur.com/EctuZxo.png “Golden Sun”)
+    ![Golden Sun](https://i.imgur.com/EctuZxo.png)
 
 * **Game & Watch Gallery 4:**
     
-    ![Game & Watch Gallery 4](http://i.imgur.com/awLMWsIh.png “Game & Watch Gallery 4”)
+    ![Game & Watch Gallery 4](https://i.imgur.com/awLMWsIh.png)
     
 * **GBA BIOS:**
 
-    ![GBA BIOS](http://i.imgur.com/kzxGoAHh.png “GBA BIOS”)
+    ![GBA BIOS](https://i.imgur.com/kzxGoAHh.png)
